@@ -4,7 +4,7 @@ Herd Enables Rapid Deployment. An operations management tool.
 
     herd [--version] [--help] <command> [<args>]
 
-## commands
+## Commands
 
 #### deploy
 
