@@ -3,7 +3,7 @@ MAINTAINER jesse.miller@adops.com
 
 RUN sudo apt-get update
 
-RUN apt-get install -y git python
+RUN apt-get install -y git python fabric
 
 ADD . /herd
 WORKDIR /herd
