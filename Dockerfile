@@ -3,7 +3,7 @@ MAINTAINER jesse.miller@adops.com
 
 RUN sudo apt-get update
 
-RUN apt-get install -y git
+RUN apt-get install -y git python
 
 ADD . /herd
 WORKDIR /herd
