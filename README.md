@@ -1,8 +1,8 @@
 # herd
 v0.1.0
-Herd Enables Rapid Deployment. An operations management tool.
+Herd Enables Rapid Deployment. A devops management tool.
 
-    herd [--version] [--help] <command> [<args>]
+    herd [-version] [--help | -h] <command> [<args>]
 
 ## Commands
 
