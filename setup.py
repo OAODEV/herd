@@ -4,7 +4,7 @@ from app.main import fmt_version
 
 setup(
     name = 'herd',
-    version = fmt_version("short"),
+    version = fmt_version(),
     packages = ['app'],
     setup_requires = ['fabric'],
     description = 'Herd Enables Rapid Deployment. A devops management tool.',
