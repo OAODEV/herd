@@ -100,38 +100,3 @@ class Release(object):
         print "created docker run command:", cmd
         return cmd
 
-def build_run_command(host, port, image_name, conf_path, release_name):
-    e_flags = get_e_flags(host, conf_path)
-
-    # if there is a release name add the appropriate flag
-    if release_name:
-        name_flag = " --name {} ".format(release_name)
-    else:
-        name_flag = ' '
-
-    # set up p (port) flag
-    p_flag = "-p {}:{}".format(port, service_port)
-
-    return "docker run -d{name_flag}{p_flag} {e_flags} {image_name}".format(
-        name_flag=name_flag,
-        p_flag=p_flag,
-        e_flags=e_flags,
-        image_name=image_name)
-
-def get_e_flags(host, conf_path):
-
-    # parse conf file for environment variables
-    Config = ConfigParser()
-    Config.read(conf_path)
-    config_pairs = Config.items("Conf")
-
-    # get envar dependencies from Manifest
-    envar_deps = [x[0] for x in manifest.items("Dependencies")]
-
-    envar_pairs = map(envar_from_host, envar_deps)
-
-    # return string of `-e` options for docker command
-    def make_e_flag(pair):
-        return "-e {}={}".format(*pair)
-
-    return ' '.join(map(make_e_flag, config_pairs + envar_pairs))
