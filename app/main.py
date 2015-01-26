@@ -2,9 +2,7 @@ import sys
 import argparse
 import commands
 
-__version__ = (0, 2, 0, 'alpha', 0)
-
-def fmt_version(type='long', v=__version__):
+def fmt_version(type='long', v=__VERSION__):
     """ format the version in long or short form """
     if type == 'long':
         return "{}.{}.{}-{}.{}".format(*v)
@@ -14,6 +12,9 @@ def fmt_version(type='long', v=__version__):
         return "{}".format(v[0])
     else:
         raise NameError("unknown version format type {}".format(type))
+
+__VERSION__ = (0, 2, 0, 'alpha', 0)
+__version__ = fmt_version('short')
 
 def main():
     """
