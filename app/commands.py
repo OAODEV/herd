@@ -21,7 +21,7 @@ def deploy(host, port, image_name, conf_path, release_name=''):
 
     Release(host, port, image_name, conf_path, release_name).deploy()
 
-    print "* {} was run at {}:{}".format(service_name, host, port)
+    print "* {} was run at {}:{}".format(image_name, host, port)
 
 class Release(object):
     """
@@ -65,6 +65,8 @@ class Release(object):
 
         String -> (String, String)
 
+        @TODO: catch when a variable is missing and handle it.
+
         """
 
         with settings(host_string=self.host):
@@ -80,7 +82,9 @@ class Release(object):
         manifest.readfp(self.__manifest__)
 
         # get dependant env pairs
-        dependant_keys = [x[0] for x in manifest.items('Dependencies')]
+        dependant_keys = [x[0].capitalize()
+                          for x
+                          in manifest.items('Dependencies')]
         dependant_pairs = [self.__get_host_env_pair__(x)
                            for x
                            in dependant_keys]
@@ -97,7 +101,7 @@ class Release(object):
             self.port, manifest.get('Service', 'service_port'))
 
         # return docker run command
-        cmd = "docker run {e_flags} {p_flag} {image_name}".format(
+        cmd = "docker run -d {e_flags} {p_flag} {image_name}".format(
             e_flags=e_flags, p_flag=p_flag, image_name=self.image_name)
         print "created docker run command:", cmd
         return cmd
