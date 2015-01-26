@@ -1,7 +1,7 @@
 from ConfigParser import ConfigParser
 from StringIO import StringIO
 
-from fabric import *
+from fabric.api import *
 
 def deploy(host, port, image_name, conf_path, release_name=''):
     """
