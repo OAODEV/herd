@@ -4,6 +4,7 @@ import unittest
 from StringIO import StringIO
 from mock import MagicMock as Mock
 from uuid import uuid4 as uuid
+from ConfigParser import ConfigParser
 
 from commands import Release
 from main import fmt_version
@@ -17,7 +18,9 @@ service_port=9999
 [Dependencies]
 mock_deps
 """
-        return StringIO(manifest)
+        config = ConfigParser(allow_no_value=True)
+        config.readfp(StringIO(manifest))
+        return config
 
     def __get_host_env_pair__(self, key):
         return (key, 'mockvalue')
@@ -50,9 +53,7 @@ class HerdCommandTests(unittest.TestCase):
         self.mock_image_name = 'dumb_image_name'
 
         # mock a release... dumb release.
-        self.mock_release = MockRelease(self.mock_host,
-                                        self.mock_port,
-                                        self.mock_image_name,
+        self.mock_release = MockRelease(self.mock_image_name,
                                         self.config_path,
                                         '')
 
@@ -74,7 +75,7 @@ class HerdCommandTests(unittest.TestCase):
 
         """
 
-        cmd = self.mock_release.__docker_run_command__
+        cmd = self.mock_release.__docker_run_command__(self.mock_port)
         self.assertTrue(re.search('^docker run .+', cmd))
         self.assertTrue(' -e testkey=mockvalue ' in cmd)
         self.assertTrue(' -e t2=m2 ' in cmd)

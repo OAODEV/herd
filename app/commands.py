@@ -19,7 +19,7 @@ def deploy(host, port, image_name, conf_path, release_name=''):
 
     print "* Deploying to {}:{}".format(host, port)
 
-    Release(host, port, image_name, conf_path, release_name).deploy()
+    Release(image_name, conf_path, release_name).deploy(host, port)
 
     print "* {} was run at {}:{}".format(image_name, host, port)
 
@@ -29,17 +29,27 @@ class Release(object):
 
     """
 
-    def deploy(self):
-        """ run the docker run command on the correct host """
-        with settings(host_string=self.host):
-            run(self.__docker_run_command__)
-
-    def __init__(self, host, port, image_name, conf_path, release_name):
-        self.host = host
-        self.port = port
+    def __init__(self, image_name, conf_path, release_name):
         self.image_name = image_name
         self.conf_path = conf_path
         self.release_name = release_name
+        # create a placeholder for the parsed manifest so we can save
+        # it for later
+        self.__parsed_manifest_file__ = None
+
+    def deploy(self, host, port):
+        """ run the docker run command on the correct host """
+        with settings(host_string=self.host):
+            run(self.__docker_run_command__(port))
+
+    def __docker_run_command__(self, port):
+        """ build a run command given the port to deploy to """
+
+        # create p flag
+        p_flag = "-p {}:{}".format(port, self.__manifest__.get('Service',
+                                                               'service_port'))
+
+        return self.__docker_release_template__.format(p_flag)
 
     @property
     def __config_pairs__(self):
@@ -53,11 +63,23 @@ class Release(object):
 
     @property
     def __manifest__(self):
-        """ Grab the manifest for the named image """
-        with settings(host=os.environ['build_host']):
-            manifest = run(
-                "docker run {} cat /Manifest".format(self.image_name))
-        return StringIO(manifest)
+        """
+        Grab the manifest for the named image return a parsed Config
+
+        """
+        # if we don't have a parsed manifest, parse it
+        if not self.__parsed_manifest_file__:
+
+            with settings(host=self.host):
+                manifest_str = run(
+                    "docker run {} cat /Manifest".format(self.image_name))
+
+                manifest = ConfigParser(allow_no_value=True)
+                manifest_file = StringIO(manigest_str)
+                manifest.readfp(manifest_file)
+                self.__parsed_manifest_file__ = manifest
+
+        return self.__parsed_manifest_file__
 
     def __get_host_env_pair__(self, key):
         """
@@ -75,34 +97,39 @@ class Release(object):
         return tuple(env_string.split('='))
 
     @property
-    def __docker_run_command__(self):
+    def __environment_dependant_pairs__(self):
+        """ read the manifest and gather the keys for all found deps """
 
-        config_pairs = self.__config_pairs__
-        manifest = ConfigParser(allow_no_value=True)
-        manifest.readfp(self.__manifest__)
-
-        # get dependant env pairs
         dependant_keys = [x[0].capitalize()
                           for x
-                          in manifest.items('Dependencies')]
+                          in self.__manifest__.items('Dependencies')]
+
         dependant_pairs = [self.__get_host_env_pair__(x)
                            for x
                            in dependant_keys]
+
+        return dependant_pairs
+
+    @property
+    def __docker_release_template__(self):
+        """
+        Build the command that will run the service with the proper config
+
+        gather the -e flags for docker from the config pairs and the environment
+        pairs. Create the -p flag based on the manifest and the release port
+
+        """
 
         # create e flag string
         e_flags = " ".join([
             "-e {}={}".format(*pair)
             for pair
-            in dependant_pairs + config_pairs
+            in self.__environment_dependant_pairs__ + self.__config_pairs__
         ])
 
-        # create p flag
-        p_flag = "-p {}:{}".format(
-            self.port, manifest.get('Service', 'service_port'))
-
         # return docker run command
-        cmd = "docker run -d {e_flags} {p_flag} {image_name}".format(
-            e_flags=e_flags, p_flag=p_flag, image_name=self.image_name)
+        cmd = "docker run -d {e_flags} {{}} {image_name}".format(
+            e_flags=e_flags, image_name=self.image_name)
         print "created docker run command:", cmd
         return cmd
 
