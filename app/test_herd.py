@@ -34,6 +34,13 @@ class HerdMainTests(unittest.TestCase):
         self.assertEqual(fmt_version('short', (1, 2, 3, 't', 5)), '1.2.3')
         self.assertEqual(fmt_version('major', (1, 2, 3, 't', 5)), '1')
 
+        # Make sure fmt has default args and can just be called with
+        # appropriate exclusions
+        assert fmt_version()
+        assert fmt_version("long")
+        assert fmt_version("short")
+        assert fmt_version("major")
+
         with self.assertRaises(NameError):
             fmt_version('foo')
 
