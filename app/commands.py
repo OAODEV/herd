@@ -76,7 +76,7 @@ class Release(object):
                     "docker run {} cat /Manifest".format(self.image_name))
 
                 manifest = ConfigParser(allow_no_value=True)
-                manifest_file = StringIO(manigest_str)
+                manifest_file = StringIO(manifest_str)
                 manifest.readfp(manifest_file)
                 self.__parsed_manifest_file__ = manifest
 
