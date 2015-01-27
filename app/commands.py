@@ -127,9 +127,15 @@ class Release(object):
             in self.__environment_dependant_pairs__ + self.__config_pairs__
         ])
 
+        # figure out the release name
+        if not self.release_name:
+            self.release_name = os.path.basename(self.conf_path)
+
+        name_flag = "--name {}".format(self.release_name)
+
         # return docker run command
-        cmd = "docker run -d {e_flags} {{}} {image_name}".format(
-            e_flags=e_flags, image_name=self.image_name)
+        cmd = "docker run -d {name_flag} {e_flags} {{}} {image_name}".format(
+            name_flag=name_flag, e_flags=e_flags, image_name=self.image_name)
         print "created docker run command:", cmd
         return cmd
 
