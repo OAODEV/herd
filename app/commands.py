@@ -39,7 +39,8 @@ class Release(object):
 
     def deploy(self, host, port):
         """ run the docker run command on the correct host """
-        with settings(host_string=self.host):
+        self.host = host
+        with settings(host_string=host):
             run(self.__docker_run_command__(port))
 
     def __docker_run_command__(self, port):
