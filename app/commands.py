@@ -79,7 +79,7 @@ class Release(object):
         # if we don't have a parsed manifest, parse it
         if not self.__parsed_manifest_file__:
 
-            with settings(host=self.host):
+            with settings(host_string=self.host):
                 manifest_str = run(
                     "docker run {} cat /Manifest".format(self.image_name))
 
