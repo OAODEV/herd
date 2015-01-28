@@ -2,7 +2,7 @@ import sys
 import argparse
 import commands
 
-__version__ = (0, 2, 0, 'alpha', 3)
+__version__ = (0, 2, 1, 'alpha', 0)
 
 def fmt_version(type='long', v=__version__):
     """ format the version in long or short form """
