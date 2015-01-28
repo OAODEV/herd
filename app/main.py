@@ -37,8 +37,18 @@ def main():
         print "herd version", fmt_version()
         sys.exit()
 
-    allowed_commands = ['deploy']
+    allowed_commands = ['deploy', 'trivial']
     if args.command in allowed_commands:
+        # don't allow any arguments to include illegal characters
+        for illegal in ['&', ';']:
+            try:
+                assert reduce(lambda a, b: a and b,
+                              map(lambda arg: illegal not in arg,
+                                  args.command_args))
+            except:
+                raise ValueError(
+                    "Illegal character '{}' not allowed".format(illegal))
+
         getattr(commands, args.command)(*args.command_args)
     else:
         print '"{}" is not a valid herd command.'.format(args.command)

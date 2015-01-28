@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import unittest
 from StringIO import StringIO
 from mock import MagicMock as Mock
@@ -7,7 +8,7 @@ from uuid import uuid4 as uuid
 from ConfigParser import ConfigParser
 
 from commands import Release
-from main import fmt_version
+from main import fmt_version, main
 
 class MockRelease(Release):
 
@@ -26,6 +27,20 @@ mock_deps
         return (key, 'mockvalue')
 
 class HerdMainTests(unittest.TestCase):
+
+    def test_illegal_characters(self):
+        sys.argv = ['herd', 'trivial', 'a', 'b', 'c', 'd;']
+        with self.assertRaises(ValueError):
+            main()
+        sys.argv = ['herd', 'trivial', 'a', 'b', 'c', 'd&']
+        with self.assertRaises(ValueError):
+            main()
+
+        sys.argv = ['herd', 'trivial', 'a', 'b', 'c', 'd']
+        try:
+            main()
+        except ValueError:
+            self.fail("main() raised ValueError unexpectedly")
 
     def test_fmt_version(self):
         """ a version 5-tuple should be formatted in the 3 appropriate ways """

@@ -5,7 +5,10 @@ from StringIO import StringIO
 
 from fabric.api import *
 
-def deploy(host, port, image_name, conf_path, release_name=''):
+def trivial(*args, **kwargs):
+    pass
+
+def deploy(image_name, conf_path, host, port, release_name=''):
     """
     Create a release from the image and conf then run on the host
 
@@ -27,21 +30,29 @@ class Release(object):
     """
     A docker run command that handles config management
 
+    The release consists of an image name, a conf file and a release name
+    deploy runs this release on a host and maps to the requested port.
+
     """
 
     def __init__(self, image_name, conf_path, release_name):
         self.image_name = image_name
         self.conf_path = conf_path
+        config = ConfigParser()
+        config.read(conf_path)
+        self.config = config
         self.release_name = release_name
         # create a placeholder for the parsed manifest so we can save
         # it for later
         self.__parsed_manifest_file__ = None
 
     def deploy(self, host, port):
-        """ run the docker run command on the correct host """
+        """ Run the release on the host and expose it on the port """
         self.host = host
+        cmd = self.__docker_run_command__(port)
+        print "running {} on {}".format(cmd, host)
         with settings(host_string=host):
-            run(self.__docker_run_command__(port))
+            run(cmd)
 
     def __docker_run_command__(self, port):
         """ build a run command given the port to deploy to """
@@ -55,10 +66,7 @@ class Release(object):
     @property
     def __config_pairs__(self):
         """ Return key value pairs from the config file """
-        print "loading config from", self.conf_path
-        config = ConfigParser()
-        config.read(self.conf_path)
-        pairs = config.items('Config')
+        pairs = self.config.items('Config')
         print "loaded {} config pairs".format(len(pairs))
         return pairs
 
@@ -135,8 +143,7 @@ class Release(object):
         name_flag = "--name {}".format(self.release_name)
 
         # return docker run command
-        cmd = "docker run -d {name_flag} {e_flags} {{}} {image_name}".format(
+        tmpl = "docker run -d {name_flag} {e_flags} {{}} {image_name}".format(
             name_flag=name_flag, e_flags=e_flags, image_name=self.image_name)
-        print "created docker run command:", cmd
-        return cmd
+        return tmpl
 

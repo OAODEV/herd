@@ -12,6 +12,6 @@ Herd Enables Rapid Deployment. A devops management tool.
 
 #### deploy
 
-    herd deploy <host> <port> <image name> <config path>
+    herd deploy <image name> <config path> <host> <port>
 
 In the future there will be an optional `--release` flag to name the release.
