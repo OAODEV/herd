@@ -13,6 +13,6 @@ test:
 
 deployment:
   hub:
-    branch: .*
+    branch: /.*/
     commands:
       - docker push r.iadops.com/dockerhello:0.2.2-alpha.0_build.`echo $CIRCLE_SHA1 | cut -c1-7`
