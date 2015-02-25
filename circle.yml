@@ -5,14 +5,14 @@ machine:
 dependencies:
   override:
     - docker info
-    - docker build -t r.iadops.com/herd:0.2.2-alpha.0_build.`echo $CIRCLE_SHA1 | cut -c1-7` .
+    - docker build -t r.iadops.com/herd:0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7` .
 
 test:
   override:
-    - docker run r.iadops.com/herd:0.2.2-alpha.0_build.`echo $CIRCLE_SHA1 | cut -c1-7` python app/test_herd.py
+    - docker run r.iadops.com/herd:0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7` python app/test_herd.py
 
 deployment:
-  hub:
+  index:
     branch: /.*/
     commands:
-      - docker push r.iadops.com/dockerhello:0.2.2-alpha.0_build.`echo $CIRCLE_SHA1 | cut -c1-7`
+      - docker push r.iadops.com/dockerhello:0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7`

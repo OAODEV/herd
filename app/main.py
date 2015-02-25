@@ -2,12 +2,12 @@ import sys
 import argparse
 import commands
 
-__version__ = (0, 2, 2, 'alpha', 0)
+__version__ = (0, 3, 0, 'beta')
 
 def fmt_version(type='long', v=__version__):
     """ format the version in long or short form """
     if type == 'long':
-        return "{}.{}.{}-{}.{}".format(*v)
+        return "{}.{}.{}-{}".format(*v)
     elif type == 'short':
         return "{}.{}.{}".format(*v[:3])
     elif type == 'major':
