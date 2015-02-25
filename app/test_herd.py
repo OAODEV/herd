@@ -46,10 +46,10 @@ class HerdMainTests(unittest.TestCase):
 
     def test_fmt_version(self):
         """ a version 5-tuple should be formatted in the 3 appropriate ways """
-        self.assertEqual(fmt_version('long', (1, 2, 3, 't', 5)), '1.2.3-t.5')
-        self.assertEqual(fmt_version(v=(1, 2, 3, 't', 5)), '1.2.3-t.5')
-        self.assertEqual(fmt_version('short', (1, 2, 3, 't', 5)), '1.2.3')
-        self.assertEqual(fmt_version('major', (1, 2, 3, 't', 5)), '1')
+        self.assertEqual(fmt_version('long', (1, 2, 3, 't')), '1.2.3-t')
+        self.assertEqual(fmt_version(v=(1, 2, 3, 't')), '1.2.3-t')
+        self.assertEqual(fmt_version('short', (1, 2, 3, 't')), '1.2.3')
+        self.assertEqual(fmt_version('major', (1, 2, 3, 't')), '1')
 
         # Make sure fmt has default args and can just be called with
         # appropriate exclusions
