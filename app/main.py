@@ -37,7 +37,8 @@ def main():
         print "herd version", fmt_version()
         sys.exit()
 
-    allowed_commands = ['integrate',
+    allowed_commands = ['pull',
+                        'integrate',
                         'localtest',
                         'unittest',
                         'deploy',
