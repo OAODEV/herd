@@ -1,6 +1,7 @@
 import os
 
 from ConfigParser import ConfigParser
+from uuid import uuid4 as uuid
 
 from fabric.api import *
 
@@ -26,6 +27,10 @@ def project_root():
 def service_name():
     """ return the service name from the manifest """
     return manifest("Service", "name")
+
+def on_host(host, cmd):
+    with settings(host_string=host):
+        run(cmd)
 
 def make_as_if_committed():
     """
