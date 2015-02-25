@@ -1,18 +1,20 @@
 machine:
   services:
     - docker
+  environment:
+    herd_build_tag: 0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7`
 
 dependencies:
   override:
     - docker info
-    - docker build -t r.iadops.com/herd:0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7` .
+    - docker build -t r.iadops.com/herd:$herd_build_tag .
 
 test:
   override:
-    - docker run r.iadops.com/herd:0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7` python app/test_herd.py
+    - docker run r.iadops.com/herd:$herd_build_tag python app/test_herd.py
 
 deployment:
   index:
     branch: /.*/
     commands:
-      - docker push r.iadops.com/dockerhello:0.3.0-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7`
+      - docker push r.iadops.com/dockerhello:$herd_build_tag
