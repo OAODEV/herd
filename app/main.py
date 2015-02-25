@@ -37,15 +37,20 @@ def main():
         print "herd version", fmt_version()
         sys.exit()
 
-    allowed_commands = ['deploy', 'trivial']
+    allowed_commands = ['integrate',
+                        'localtest',
+                        'unittest',
+                        'deploy',
+                        'trivial']
     if args.command in allowed_commands:
         # don't allow any arguments to include illegal characters
         for illegal in ['&', ';', '|', '>', '<']:
             try:
                 assert reduce(lambda a, b: a and b,
                               map(lambda arg: illegal not in arg,
-                                  args.command_args))
-            except:
+                                  args.command_args),
+                              True)
+            except Exception, e:
                 raise ValueError(
                     "Illegal character '{}' found in argument".format(illegal))
 

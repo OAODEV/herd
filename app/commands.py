@@ -2,11 +2,146 @@ import os
 
 from ConfigParser import ConfigParser
 from StringIO import StringIO
+from uuid import uuid4 as uuid
 
 from fabric.api import *
 
+build_base_path = '/var/herd/build'
+build_host = "qa.iadops.com"
+
+def on_host(host, cmd):
+    with settings(host_string=host):
+        run(cmd)
+
 def trivial(*args, **kwargs):
     pass
+
+def manifest(section, option):
+    config = ConfigParser(allow_no_value=True)
+    config.read(os.path.join(project_root(), 'Manifest'))
+    return config.get(section, option)
+
+def unittest_cmd():
+    """ get the unittest command out of the Manifest """
+    return manifest("Service", "unittest_cmd")
+
+def project_root():
+    """ return the path to the project root (the one with .git) """
+    path = os.path.abspath('.')
+    while not os.path.exists(os.path.join(path, '.git')) and path != '/':
+        path = os.path.abspath(os.path.join(path, '..'))
+    assert path != '/'
+    return path
+
+def service_name():
+    """ return the service name from the manifest """
+    return manifest("Service", "name")
+
+def make_as_if_committed():
+    """
+    make the project as if the current state were committed
+
+    rsync the current state of the project up to a workspace on the build server
+    then docker build that folder and return the name of the build container.
+
+    """
+
+    build_path = os.path.join(build_base_path, env.user, service_name())
+    on_host(build_host, "mkdir -p {}".format(build_path))
+
+    rsync = "rsync -rlvz --filter=':- .gitignore' -e ssh --delete ./ {}:{}"
+    with cd(project_root()):
+        local(rsync.format(build_host, build_path))
+
+    test_build_name = "{}:unittesting".format(uuid())
+
+    with cd(build_path):
+        on_host(build_host, "docker build -t {} .".format(test_build_name))
+
+    return test_build_name
+
+def clean_up_runs():
+    """ remove all stoped containers """
+    with settings(warn_only=True):
+        on_host(build_host, "docker rm $(docker ps -aq)")
+
+def remove_build(build):
+    """ remove the image of build """
+    with settings(warn_only=True):
+        on_host(build_host, "docker rmi {}".format(build))
+
+def run_cmd_in(build, cmd):
+    """ run the command in the build """
+    on_host(build_host, "docker run {} {}".format(build, cmd))
+
+def unittest():
+    """
+    Run the unit tests on the current state of the project root.
+
+    this means making a build of the current state of the project, running the
+    test command inside that container and reporting the results.
+
+    """
+
+    build = make_as_if_committed()
+    run_cmd_in(build, unittest_cmd())
+    clean_up_runs()
+    remove_build(build)
+
+    print
+    print "unittests pass!!"
+    print
+
+def localtest():
+    with cd(project_root()):
+        local(unittest_cmd())
+
+def integrate():
+    """
+    integrate the current HEAD
+
+    Should fail if there are any uncommitted changes to the local repo
+
+    """
+
+    pull()
+    unittest()
+    push()
+    success()
+
+def success():
+    if os.path.exists("./success_art.txt"):
+        with open("./success_art.txt", 'r') as art:
+            print art.read()
+    else:
+        print
+        print "-----*> SUCCESS <*-----"
+        print
+
+def push():
+    branch = local('git rev-parse --abbrev-ref HEAD', capture=True)
+    local("git push -u hub {}".format(branch))
+
+def pull():
+    """
+    pull all changes for mainline and my branch from the hub repo
+
+    return the current working branch
+
+    """
+
+    # fetch remote branch references and deletes outdated remote branch names
+    local("git remote update --prune hub")
+
+    # Merge any new mainline changes
+    local("git pull hub mainline")
+
+    # Merge any new current branch changes
+    branch = local('git rev-parse --abbrev-ref HEAD', capture=True)
+    if branch != 'mainline':
+        # if the remote exists, pull it
+        with settings(warn_only=True):
+            local("git pull hub {}".format(branch))
 
 def deploy(image_name, conf_path, host, port, release_name=''):
     """

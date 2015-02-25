@@ -6,8 +6,9 @@ from StringIO import StringIO
 from mock import MagicMock as Mock
 from uuid import uuid4 as uuid
 from ConfigParser import ConfigParser
+from fabric.api import *
 
-from commands import Release
+from commands import Release, project_root, unittest_cmd, service_name
 from main import fmt_version, main
 
 class MockRelease(Release):
@@ -25,6 +26,7 @@ mock_deps
 
     def __get_host_env_pair__(self, key):
         return (key, 'mockvalue')
+
 
 class HerdMainTests(unittest.TestCase):
 
@@ -59,8 +61,7 @@ class HerdMainTests(unittest.TestCase):
         with self.assertRaises(NameError):
             fmt_version('foo')
 
-
-class HerdCommandTests(unittest.TestCase):
+class HerdDeployTests(unittest.TestCase):
 
     def setUp(self):
         # mock a config... dumb config.
@@ -106,6 +107,25 @@ class HerdCommandTests(unittest.TestCase):
 
     def test_can_pass(self):
         self.assertTrue(True)
+
+
+class HerdUnittestTests(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_project_root(self):
+        """ ensure that the path reported by project root has a .git folder """
+        self.assertTrue(os.path.exists(os.path.join(project_root(), ".git")))
+
+    def test_service_name(self):
+        self.assertEqual(service_name(), "herd")
+
+    def test_unittest_cmd(self):
+        self.assertEqual(unittest_cmd(), "python app/test_herd.py")
 
 
 if __name__ == '__main__':
