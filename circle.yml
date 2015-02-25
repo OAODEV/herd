@@ -11,6 +11,7 @@ dependencies:
 
 test:
   override:
+    - echo  $herd_build_tag
     - docker run r.iadops.com/herd:$herd_build_tag python app/test_herd.py
 
 deployment:
