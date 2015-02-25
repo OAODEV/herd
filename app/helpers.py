@@ -27,6 +27,10 @@ def service_name():
     """ return the service name from the manifest """
     return manifest("Service", "name")
 
+def on_host(host, cmd):
+    with settings(host_string=host):
+        run(cmd)
+
 def make_as_if_committed():
     """
     make the project as if the current state were committed
