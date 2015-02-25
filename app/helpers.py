@@ -1,6 +1,7 @@
 import os
 
 from ConfigParser import ConfigParser
+from uuid import uuid4 as uuid
 
 from fabric.api import *
 
@@ -41,7 +42,6 @@ def make_as_if_committed():
     """
 
     build_path = os.path.join(build_base_path, env.user, service_name())
-    import pdb; pdb.set_trace()
     on_host(build_host, "mkdir -p {}".format(build_path))
 
     rsync = "rsync -rlvz --filter=':- .gitignore' -e ssh --delete ./ {}:{}"
