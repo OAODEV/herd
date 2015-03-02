@@ -8,8 +8,16 @@ from uuid import uuid4 as uuid
 from ConfigParser import ConfigParser
 from fabric.api import *
 
-from commands import Release, project_root, unittest_cmd, service_name
-from main import fmt_version, main
+from commands import (
+    Release,
+    project_root,
+    unittest_cmd,
+    service_name,
+    setconfig,
+    )
+from main import main
+from config import init, make_init_config, config_path
+
 
 class MockRelease(Release):
 
@@ -44,22 +52,22 @@ class HerdMainTests(unittest.TestCase):
         except ValueError:
             self.fail("main() raised ValueError unexpectedly")
 
-    def test_fmt_version(self):
-        """ a version 5-tuple should be formatted in the 3 appropriate ways """
-        self.assertEqual(fmt_version('long', (1, 2, 3, 't')), '1.2.3-t')
-        self.assertEqual(fmt_version(v=(1, 2, 3, 't')), '1.2.3-t')
-        self.assertEqual(fmt_version('short', (1, 2, 3, 't')), '1.2.3')
-        self.assertEqual(fmt_version('major', (1, 2, 3, 't')), '1')
-
-        # Make sure fmt has default args and can just be called with
-        # appropriate exclusions
-        assert fmt_version()
-        assert fmt_version("long")
-        assert fmt_version("short")
-        assert fmt_version("major")
-
-        with self.assertRaises(NameError):
-            fmt_version('foo')
+#    def test_fmt_version(self):
+#        """ a version 5-tuple should be formatted in the 3 appropriate ways """
+#        self.assertEqual(fmt_version('long', (1, 2, 3, 't')), '1.2.3-t')
+#        self.assertEqual(fmt_version(v=(1, 2, 3, 't')), '1.2.3-t')
+#        self.assertEqual(fmt_version('short', (1, 2, 3, 't')), '1.2.3')
+#        self.assertEqual(fmt_version('major', (1, 2, 3, 't')), '1')
+#
+#        # Make sure fmt has default args and can just be called with
+#        # appropriate exclusions
+#        assert fmt_version()
+#        assert fmt_version("long")
+#        assert fmt_version("short")
+#        assert fmt_version("major")
+#
+#        with self.assertRaises(NameError):
+#            fmt_version('foo')
 
 class HerdDeployTests(unittest.TestCase):
 
@@ -126,6 +134,56 @@ class HerdUnittestTests(unittest.TestCase):
 
     def test_unittest_cmd(self):
         self.assertEqual(unittest_cmd(), "python app/test_herd.py")
+
+
+class HerdConfigTests(unittest.TestCase):
+
+    def setUp(self):
+        self.test_config_path = "./{}".format(str(uuid()))
+        os.environ['herd_config_path'] = self.test_config_path
+        with open(self.test_config_path, 'w') as configfile:
+            conf = ConfigParser()
+            conf.add_section("Mock")
+            conf.set("Mock", "mockopt", "mockval")
+            conf.write(configfile)
+
+    def tearDown(self):
+        try:
+            os.remove(self.test_config_path)
+        except:
+            pass
+
+    def test_configure(self):
+        key = str(uuid())
+        value = str(uuid())
+        section = str(uuid())
+        setconfig(section, key, value)
+        with open(self.test_config_path, 'r') as configfile:
+            conf = ConfigParser()
+            conf.readfp(configfile)
+            self.assertEqual(conf.get(section, key), value)
+            self.assertEqual(conf.get("Mock", "mockopt"), "mockval")
+
+    def test_make_init_config_file(self):
+        """ make_init_config should write a config file """
+
+        make_init_config(self.test_config_path, "mock.host.io")
+        with open(self.test_config_path, 'r') as configfile:
+            config = ConfigParser()
+            config.readfp(configfile)
+            self.assertEqual(config.get("Build", "host"), "mock.host.io")
+            self.assertEqual(config.get("Build", "base_path"),
+                             "/var/herd/build")
+
+    def test_config_path_helper(self):
+
+        # if it's none, return the default
+        del os.environ['herd_config_path']
+        self.assertEqual(config_path(), os.path.expanduser("~/.herdconfig"))
+
+        # if it's something return that
+        os.environ['herd_config_path'] = "/mock/path/.herdconfig"
+        self.assertEqual(config_path(), "/mock/path/.herdconfig")
 
 
 if __name__ == '__main__':

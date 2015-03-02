@@ -5,7 +5,11 @@ from uuid import uuid4 as uuid
 
 from fabric.api import *
 
-from config import *
+from config import get_config
+
+cfg = get_config()
+build_base_path = cfg['build_base_path']
+build_host = cfg['build_host']
 
 def manifest(section, option):
     config = ConfigParser(allow_no_value=True)

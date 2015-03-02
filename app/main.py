@@ -1,19 +1,22 @@
+import os
 import sys
 import argparse
 import commands
 
-__version__ = (0, 3, 2, 'beta')
+from config import default_config_path
 
-def fmt_version(type='long', v=__version__):
-    """ format the version in long or short form """
-    if type == 'long':
-        return "{}.{}.{}-{}".format(*v)
-    elif type == 'short':
-        return "{}.{}.{}".format(*v[:3])
-    elif type == 'major':
-        return "{}".format(v[0])
-    else:
-        raise NameError("unknown version format type {}".format(type))
+#__version__ = (0, 3, 2, 'beta')
+
+#def fmt_version(type='long', v=__version__):
+#    """ format the version in long or short form """
+#    if type == 'long':
+#        return "{}.{}.{}-{}".format(*v)
+#    elif type == 'short':
+#        return "{}.{}.{}".format(*v[:3])
+#    elif type == 'major':
+#        return "{}".format(v[0])
+#    else:
+#        raise NameError("unknown version format type {}".format(type))
 
 def main():
     """
@@ -42,6 +45,7 @@ def main():
                         'localtest',
                         'unittest',
                         'deploy',
+                        'setconfig',
                         'trivial']
     if args.command in allowed_commands:
         # don't allow any arguments to include illegal characters

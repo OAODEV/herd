@@ -3,20 +3,39 @@ import sys
 
 from ConfigParser import ConfigParser
 
-__all__ = ["build_base_path", "build_host"]
+default_config_path = "~/.herdconfig"
 
-config_path = os.path.expanduser(
-    os.environ.get("herd_config_path", "~/.herdconfig"))
+def get_config():
 
-config = ConfigParser()
-if not config.read(config_path):
-    print "Missing herd config file at {}".format(config_path)
-    print "Configuring new herd config now..."
-    input_build_host = raw_input("build host: ")
-    with open(config_path, "w") as configfile:
+    config = ConfigParser()
+    cfg_path = config_path()
+    if not config.read(cfg_path):
+        print "Missing herd config file at {}".format(cfg_path)
+        init()
+        config.read(cfg_path)
+
+    return {
+        "build_base_path": config.get("Build", "base_path"),
+        "build_host": config.get("Build", "host")
+        }
+
+def init():
+    """ initalize the client configuration file """
+
+    print "Initalizing herd environment."
+    print "Please provide the folowing."
+    make_init_config(
+        config_path(),
+        raw_input("build host: ")
+        )
+
+def make_init_config(path, build_host):
+    """ write an initial config file """
+    with open(path, "w") as configfile:
         configfile.write("[Build]\nhost={}\nbase_path=/var/herd/build\n".format(
-                input_build_host))
-    config.read(config_path)
+                build_host))
 
-build_base_path = config.get("Build", "base_path") # '/var/herd/build'
-build_host = config.get("Build", "host")           # "qa.iadops.com"
+def config_path():
+    return os.path.expanduser(
+        os.environ.get("herd_config_path", default_config_path))
+
