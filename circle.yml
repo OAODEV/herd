@@ -3,7 +3,7 @@ machine:
     - docker
   environment:
     herd_service_name: herd
-    herd_unittest_cmd: python python app/test_herd.py
+    herd_unittest_cmd: python app/test_herd.py
 
     herd_build_tag: $(cat $CIRCLE_PROJECT_REPONAME/Version)_build.$(echo $CIRCLE_SHA1 | cut -c1-7)
 
