@@ -9,7 +9,6 @@ machine:
 
 dependencies:
   override:
-    - echo $herd_build_tag
     - docker info
     - docker build -t r.iadops.com/$herd_service_name:$herd_build_tag .
 
