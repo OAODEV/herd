@@ -1,10 +1,11 @@
 from setuptools import setup
 
-from app.main import fmt_version
+with open('version', 'r') as versionfile:
+    v = versionfile.read()
 
 setup(
     name = 'herd',
-    version = fmt_version('short'),
+    version = v,
     packages = ['app'],
     setup_requires = ['fabric'],
     description = 'Herd Enables Rapid Deployment. A devops management tool.',

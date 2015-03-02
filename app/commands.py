@@ -6,10 +6,24 @@ from uuid import uuid4 as uuid
 from fabric.api import *
 
 from helpers import *
-from config import *
+from config import get_config, config_path
+
+cfg = get_config()
+build_base_path = cfg['build_base_path']
+build_host = cfg['build_host']
 
 def trivial(*args, **kwargs):
     pass
+
+def setconfig(section, key, value):
+    """ set the key to the value in .herdconfig """
+    conf = ConfigParser()
+    with open(config_path(), 'r') as configfile:
+        conf.readfp(configfile)
+        conf.add_section(section)
+        conf.set(section, key, value)
+    with open(config_path(), 'w') as configfile:
+        conf.write(configfile)
 
 def unittest():
     """
