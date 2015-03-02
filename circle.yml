@@ -2,7 +2,7 @@ machine:
   services:
     - docker
   environment:
-    herd_build_tag: 0.3.1-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7`
+    herd_build_tag: 0.3.2-beta_build.`echo $CIRCLE_SHA1 | cut -c1-7`
 
 dependencies:
   override:
