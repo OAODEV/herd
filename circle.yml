@@ -14,8 +14,8 @@ test:
     - echo  $herd_build_tag
     - docker run r.iadops.com/herd:$herd_build_tag python app/test_herd.py
 
-deployment:
-  index:
-    branch: /.*/
-    commands:
-      - docker push r.iadops.com/dockerhello:$herd_build_tag
+#deployment:
+#  index:
+#    branch: /.*/
+#    commands:
+#      - docker push r.iadops.com/dockerhello:$herd_build_tag
