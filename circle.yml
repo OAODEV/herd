@@ -2,20 +2,23 @@ machine:
   services:
     - docker
   environment:
-    herd_build_tag: $(cat Version)_build.$(echo $CIRCLE_SHA1 | cut -c1-7)
+    herd_service_name: herd
+    herd_unittest_cmd: python python app/test_herd.py
+
+    herd_build_tag: $(cat $CIRCLE_PROJECT_REPONAME/Version)_build.$(echo $CIRCLE_SHA1 | cut -c1-7)
 
 dependencies:
   override:
+    - echo $herd_build_tag
     - docker info
-    - docker build -t r.iadops.com/herd:$herd_build_tag .
+    - docker build -t r.iadops.com/$herd_service_name:$herd_build_tag .
 
 test:
   override:
-    - echo  $herd_build_tag
-    - docker run r.iadops.com/herd:$herd_build_tag python app/test_herd.py
+    - docker run r.iadops.com/$herd_service_name:$herd_build_tag $herd_unittest_cmd
 
 #deployment:
 #  index:
 #    branch: /.*/
 #    commands:
-#      - docker push r.iadops.com/herd:$herd_build_tag
+#      - docker push r.iadops.com/hello:$herd_build_tag
