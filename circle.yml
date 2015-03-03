@@ -9,15 +9,10 @@ machine:
 
 dependencies:
   override:
+    - echo "The build name is in here!!!" r.iadops.com/$herd_service_name:$herd_build_tag
     - docker info
     - docker build -t r.iadops.com/$herd_service_name:$herd_build_tag .
 
 test:
   override:
     - docker run r.iadops.com/$herd_service_name:$herd_build_tag $herd_unittest_cmd
-
-#deployment:
-#  index:
-#    branch: /.*/
-#    commands:
-#      - docker push r.iadops.com/hello:$herd_build_tag
