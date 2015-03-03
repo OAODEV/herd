@@ -8,6 +8,8 @@ from fabric.api import *
 from helpers import *
 from config import get_config, config_path
 
+env.use_ssh_config = True
+
 cfg = get_config()
 build_base_path = cfg['build_base_path']
 build_host = cfg['build_host']

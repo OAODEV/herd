@@ -5,18 +5,18 @@ import commands
 
 from config import default_config_path
 
-#__version__ = (0, 3, 2, 'beta')
+__version__ = (0, 4, 0, 'beta')
 
-#def fmt_version(type='long', v=__version__):
-#    """ format the version in long or short form """
-#    if type == 'long':
-#        return "{}.{}.{}-{}".format(*v)
-#    elif type == 'short':
-#        return "{}.{}.{}".format(*v[:3])
-#    elif type == 'major':
-#        return "{}".format(v[0])
-#    else:
-#        raise NameError("unknown version format type {}".format(type))
+def fmt_version(type='long', v=__version__):
+    """ format the version in long or short form """
+    if type == 'long':
+        return "{}.{}.{}-{}".format(*v)
+    elif type == 'short':
+        return "{}.{}.{}".format(*v[:3])
+    elif type == 'major':
+        return "{}".format(v[0])
+    else:
+        raise NameError("unknown version format type {}".format(type))
 
 def main():
     """
