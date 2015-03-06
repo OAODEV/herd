@@ -202,9 +202,13 @@ class Release(object):
             self.release_name = os.path.basename(self.conf_path)
 
         name_flag = "--name {}".format(self.release_name)
+        h_flag = "-h {}".format(self.release_name)
 
         # return docker run command
-        tmpl = "docker run -d {name_flag} {e_flags} {{}} {image_name}".format(
-            name_flag=name_flag, e_flags=e_flags, image_name=self.image_name)
-        return tmpl
+        tmpl = "docker run -d {h_flag} {name_flag} {e_flags} {{}} {image_name}"
+        return tmpl.format(
+            h_flag=h_flag,
+            name_flag=name_flag,
+            e_flags=e_flags,
+            image_name=self.image_name)
 
