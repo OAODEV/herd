@@ -15,7 +15,7 @@ from commands import (
     service_name,
     setconfig,
     )
-from main import main
+from main import main, fmt_version
 from config import init, make_init_config, config_path
 
 
@@ -52,22 +52,22 @@ class HerdMainTests(unittest.TestCase):
         except ValueError:
             self.fail("main() raised ValueError unexpectedly")
 
-#    def test_fmt_version(self):
-#        """ a version 5-tuple should be formatted in the 3 appropriate ways """
-#        self.assertEqual(fmt_version('long', (1, 2, 3, 't')), '1.2.3-t')
-#        self.assertEqual(fmt_version(v=(1, 2, 3, 't')), '1.2.3-t')
-#        self.assertEqual(fmt_version('short', (1, 2, 3, 't')), '1.2.3')
-#        self.assertEqual(fmt_version('major', (1, 2, 3, 't')), '1')
-#
-#        # Make sure fmt has default args and can just be called with
-#        # appropriate exclusions
-#        assert fmt_version()
-#        assert fmt_version("long")
-#        assert fmt_version("short")
-#        assert fmt_version("major")
-#
-#        with self.assertRaises(NameError):
-#            fmt_version('foo')
+    def test_fmt_version(self):
+        """ a version 5-tuple should be formatted in the 3 appropriate ways """
+        self.assertEqual(fmt_version('long', (1, 2, 3, 't')), '1.2.3-t')
+        self.assertEqual(fmt_version(v=(1, 2, 3, 't')), '1.2.3-t')
+        self.assertEqual(fmt_version('short', (1, 2, 3, 't')), '1.2.3')
+        self.assertEqual(fmt_version('major', (1, 2, 3, 't')), '1')
+
+        # Make sure fmt has default args and can just be called with
+        # appropriate exclusions
+        assert fmt_version()
+        assert fmt_version("long")
+        assert fmt_version("short")
+        assert fmt_version("major")
+
+        with self.assertRaises(NameError):
+            fmt_version('foo')
 
 class HerdDeployTests(unittest.TestCase):
 
