@@ -18,6 +18,97 @@ from commands import (
 from main import main, fmt_version
 from config import init, make_init_config, config_path
 
+class HerdSecretsTest(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_create_key(self):
+        """ Herd should create keys for the user """
+        self.fail("test not implemented")
+
+    def test_list_keys(self):
+        """ Herd needs to be able to list all keys on our public keyserver """
+        self.fail("test not implemented")
+
+    def test_trust_key(self):
+        """ Herd users should be able to assert that they trust a key """
+        self.fail("test not implemented")
+
+    def test_revoke_key(self):
+        """ Herd users should be able to revoke their trust of a key """
+        self.fail("test not implemented")
+
+    def test_check_revocation(self):
+        """ Herd should allow revocation checking of a key by other users"""
+        self.fail("test not implemented")
+
+    def test_create_signed_encrypted_secret(self):
+        """ herd should create signed then encrypted secret messages
+
+        Herd should not encrypt to any untrusted key
+
+        """
+
+        self.fail("test not implemented")
+
+    def test_distribute_secret(self):
+        """ herd should only distribute signed then encrypted messages
+
+        herd should be able to find secrets it distributed by all methods
+
+        created by me
+        intended for me
+        name
+        freshness
+
+        """
+
+        self.fail("test not implemented")
+
+    def test_list_secrets(self):
+        """ Herd should be able to list secrets in a number of ways
+
+        list all secrets
+        list secrets created by me
+        list secrets created by someone
+        list secrets that are intended for me
+        list secrets that are intended for someone
+        filter secrets by freshness (date)
+
+        """
+
+        self.fail("test not implemented")
+
+    def test_get_secret(self):
+        """ herd should be able to download a secret file """
+        self.fail("test not implemented")
+
+    def test_decrypt_and_verify_my_secret(self):
+        """ herd should decrypt and verify secrets intended for me
+
+        Herd should also fail to decrypt secrets not intended for me. and should
+        throw out secrets that have valid signitures from trusted keys.
+
+        """
+
+        self.fail("test not implemented")
+
+    def test_load_ephemeral_config(self):
+        """ herd should load a config file to the ephemeral storage """
+        self.fail("test not implemented")
+
+    def test_deploy_with_ephemeram_config(self):
+        """ herd should deploy runs with the ephemeral config """
+        self.fail("test not implemented")
+
+    def test_wipe_ehpemeral_config(self):
+        """ herd should wipe the config file when finished with it """
+        self.fail("test not implemented")
+
 
 class MockRelease(Release):
 
