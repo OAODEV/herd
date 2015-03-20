@@ -6,13 +6,9 @@ from uuid import uuid4 as uuid
 from fabric.api import *
 
 from helpers import *
-from config import get_config, config_path
+from config import config_path
 
 env.use_ssh_config = True
-
-cfg = get_config()
-build_base_path = cfg['build_base_path']
-build_host = cfg['build_host']
 
 def trivial(*args, **kwargs):
     pass
@@ -27,7 +23,7 @@ def setconfig(section, key, value):
     with open(config_path(), 'w') as configfile:
         conf.write(configfile)
 
-def unittest():
+def _unittest_():
     """
     Run the unit tests on the current state of the project root.
 
@@ -38,6 +34,10 @@ def unittest():
 
     build = make_as_if_committed()
     run_cmd_in(build, unittest_cmd())
+    return build
+
+def unittest():
+    build = _unittest_()
     clean_up_runs()
     remove_build(build)
 
@@ -49,8 +49,10 @@ def integrate():
     """ integrate the current HEAD with the hub repo """
 
     pull()
-    unittest()
+    build = _unittest_()
     push()
+    clean_up_runs()
+    remove_build(build)
     success()
 
 def pull():
@@ -58,7 +60,6 @@ def pull():
 
     # fetch remote branch references and deletes outdated remote branch names
     local("git remote update --prune hub")
-
     # Merge any new mainline changes
     local("git pull hub mainline")
 

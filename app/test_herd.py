@@ -7,6 +7,7 @@ from mock import MagicMock as Mock
 from uuid import uuid4 as uuid
 from ConfigParser import ConfigParser
 from fabric.api import *
+import gnupg
 
 from commands import (
     Release,
@@ -15,96 +16,226 @@ from commands import (
     service_name,
     setconfig,
     )
+
+from security import (
+    sign_then_encrypt_file,
+    decrypt_and_verify_file,
+    fetch_secret,
+    distribute_secret,
+    DistributePlaintextError,
+    NotTrustedError,
+)
+
 from main import main, fmt_version
-from config import init, make_init_config, config_path
+from config import (
+    init,
+    make_init_config,
+    config_path,
+    )
 
 class HerdSecretsTest(unittest.TestCase):
 
     def setUp(self):
-        pass
+        # set up test keys
+        self.gpghome = str(uuid())
+        # 2 trusted keys and one untrusted key
+        self.gpg = gnupg.GPG(gnupghome="app/unittest_gnupghome")
+
+        # set up identities
+        self.my_fingerprint = u'B133D6ED48CE0666BA77881C7C039C75475A96B2'
+        self.their_fingerprint = u'0FE187AE80702283E85D7241389171E911C19847'
+        self.untrusted_fingerprint = u"79985D6FF6E93B008F7C2872AFBAF11DA4791002"
+        self.recipients = [self.my_fingerprint, self.their_fingerprint]
+
+        # set up test secret
+        self.plainpath = str(uuid())
+        self.secret_a = str(uuid())
+        self.secret_b = str(uuid())
+        with open(self.plainpath, 'w') as plainfile:
+            plainfile.writelines([
+                    "a={}\n".format(self.secret_a),
+                    "b={}\n".format(self.secret_b),
+                    ])
+
+        # encrypt and sign something to me
+        self.my_secret = str(uuid())
+        self.my_cypherpath = str(uuid())
+        self.my_cyphertext = self.gpg.encrypt(
+            self.my_secret,
+            self.my_fingerprint,
+            sign=self.their_fingerprint,
+            )
+        with open(self.my_cypherpath, 'w') as my_cypherfile:
+            my_cypherfile.write(self.my_cyphertext.data)
+
+        # encrypt but don't sign something to me
+        self.unverified_secret = str(uuid())
+        self.unverified_cypherpath = str(uuid())
+        self.unverified_cyphertext = self.gpg.encrypt(
+            self.my_secret,
+            self.my_fingerprint)
+        with open(self.unverified_cypherpath, 'w') as unverified_cypherfile:
+            unverified_cypherfile.write(self.unverified_cyphertext.data)
+
+        # encrypt but sign with untrusted key
+        self.untrusted_secret = str(uuid())
+        self.untrusted_cypherpath = str(uuid())
+        self.untrusted_cyphertext = self.gpg.encrypt(
+            self.my_secret,
+            self.my_fingerprint,
+            sign=self.untrusted_fingerprint
+            )
+        with open(self.untrusted_cypherpath, 'w') as untrusted_cypherfile:
+            untrusted_cypherfile.write(self.untrusted_cyphertext.data)
+
+        # intercept os.system
+        self.realsystem = os.system
+        self.mock_system = Mock()
+        os.system = self.mock_system
 
     def tearDown(self):
-        pass
+        # restore os.system
+        os.system = self.realsystem
 
-    def test_create_key(self):
-        """ Herd should create keys for the user """
-        self.fail("test not implemented")
+        # remove test files
+        def remove(p):
+            try: os.remove(p)
+            except: pass
+            try: os.rmdir(p)
+            except: pass
 
-    def test_list_keys(self):
-        """ Herd needs to be able to list all keys on our public keyserver """
-        self.fail("test not implemented")
-
-    def test_trust_key(self):
-        """ Herd users should be able to assert that they trust a key """
-        self.fail("test not implemented")
-
-    def test_revoke_key(self):
-        """ Herd users should be able to revoke their trust of a key """
-        self.fail("test not implemented")
-
-    def test_check_revocation(self):
-        """ Herd should allow revocation checking of a key by other users"""
-        self.fail("test not implemented")
+        map(lambda x: remove(x), [
+                self.gpghome,
+                self.plainpath,
+                self.my_cypherpath,
+                self.unverified_cypherpath,
+                self.untrusted_cypherpath,
+                ])
 
     def test_create_signed_encrypted_secret(self):
-        """ herd should create signed then encrypted secret messages
+        """ herd should create signed then encrypted secret messages """
 
-        Herd should not encrypt to any untrusted key
+        # happy path
+        cyperpath = sign_then_encrypt_file(
+            self.plainpath,
+            self.recipients,
+            )
 
-        """
-
-        self.fail("test not implemented")
+        # confirm assumptions
+        with open(cyperpath, 'r') as cfile, open(self.plainpath, 'r') as pfile:
+            decrypted_data = self.gpg.decrypt_file(cfile)
+            # it decrypts to the original text
+            self.assertEqual(pfile.read(), decrypted_data.data)
+            # it is trusted ultimately
+            self.assertTrue(
+                decrypted_data.trust_level == decrypted_data.TRUST_ULTIMATE)
+            # I signed it
+            self.assertEqual(decrypted_data.fingerprint, self.my_fingerprint)
 
     def test_distribute_secret(self):
-        """ herd should only distribute signed then encrypted messages
+        """ herd should only distribute encrypted messages """
+        #set up
+        cypherpath = sign_then_encrypt_file(self.plainpath, self.recipients)
 
-        herd should be able to find secrets it distributed by all methods
+        # excersize SUT (distribute the plainpath)
+        with self.assertRaises(DistributePlaintextError):
+            distribute_secret(self.plainpath)
 
-        created by me
-        intended for me
-        name
-        freshness
+        # confirm that os.system did not call any command
+        self.assertEqual(os.system.call_count, 0)
 
-        """
+        # excersize SUT (distribute the correct path)
+        distribute_secret(cypherpath)
 
-        self.fail("test not implemented")
-
-    def test_list_secrets(self):
-        """ Herd should be able to list secrets in a number of ways
-
-        list all secrets
-        list secrets created by me
-        list secrets created by someone
-        list secrets that are intended for me
-        list secrets that are intended for someone
-        filter secrets by freshness (date)
-
-        """
-
-        self.fail("test not implemented")
+        # confirm that os.system called the correct scp command
+        scp_cmd = "scp {} sec.iadops.com/{}".format(
+            cypherpath, os.path.basename(cypherpath))
+        os.system.assert_called_once_with(scp_cmd)
 
     def test_get_secret(self):
         """ herd should be able to download a secret file """
-        self.fail("test not implemented")
+        # set up
+        secret_name = str(uuid())
+
+        # run SUT
+        fetch_secret(secret_name)
+
+        # confirm assumptions
+        expected_str = "wget sec.iadops.com/{}".format(secret_name)
+        self.mock_system.assert_called_once_with(expected_str)
 
     def test_decrypt_and_verify_my_secret(self):
         """ herd should decrypt and verify secrets intended for me
 
         Herd should also fail to decrypt secrets not intended for me. and should
-        throw out secrets that have valid signitures from trusted keys.
+        throw out secrets that don't have valid signitures from trusted keys.
 
         """
 
+        # happy path
+        plaintext = decrypt_and_verify_file(self.my_cypherpath)
+
+        # confirm assumptions
+        self.assertEqual(plaintext, self.my_secret)
+
+        # no signiture
+        with self.assertRaises(NotTrustedError):
+            plaintext = decrypt_and_verify(self.unverified_cypherpath)
+
+        # untrusted signiture
+        with self.assertRaises(NotTrustedError):
+            plaintext = decrypt_and_verify(self.untrusted_cypherpath)
+
+        # no encryption
+        with self.assertRaises(NotEncryptedError):
+            plaintext = decrypt_and_verify(self.plainpath)
+
+    @unittest.skip("Creating keys will be done manually until after 1.0")
+    def test_create_key(self):
+        """ Herd should create keys for the user """
         self.fail("test not implemented")
 
+    @unittest.skip("Distributing keys will be done manually until after 1.0")
+    def test_distribute_keys(self):
+        """ herd should distribute your public keys """
+        self.fail("test not implemented")
+
+    @unittest.skip("Showing keys will be done manually until after 1.0")
+    def test_show_keys(self):
+        """ Herd needs to be able to list local keys """
+        self.fail("test not implemented")
+
+    @unittest.skip("trusting keys will be done manually until after 1.0")
+    def test_trust_key(self):
+        """ Herd users should be able to assert that they trust a key """
+        self.fail("test not implemented")
+
+    @unittest.skip("Revoking keys will be done manually until after 1.0")
+    def test_revoke_key(self):
+        """ Herd users should be able to revoke their key """
+        self.fail("test not implemented")
+
+    @unittest.skip("Revoking keys will be done manually until after 1.0")
+    def test_check_revocation(self):
+        """ Herd should allow revocation checking of a key by other users"""
+        self.fail("test not implemented")
+
+    @unittest.skip("Listing secrets will be done manually until after 1.0")
+    def test_list_secrets(self):
+        """ Herd should be able to list secrets """
+        self.fail("test not implemented")
+
+    @unittest.skip("Skipping until working on deploy command")
     def test_load_ephemeral_config(self):
         """ herd should load a config file to the ephemeral storage """
         self.fail("test not implemented")
 
-    def test_deploy_with_ephemeram_config(self):
+    @unittest.skip("Skipping until working on deploy command")
+    def test_deploy_with_ephemeral_config(self):
         """ herd should deploy runs with the ephemeral config """
         self.fail("test not implemented")
 
+    @unittest.skip("Skipping until working on deploy command")
     def test_wipe_ehpemeral_config(self):
         """ herd should wipe the config file when finished with it """
         self.fail("test not implemented")
@@ -275,7 +406,6 @@ class HerdConfigTests(unittest.TestCase):
         # if it's something return that
         os.environ['herd_config_path'] = "/mock/path/.herdconfig"
         self.assertEqual(config_path(), "/mock/path/.herdconfig")
-
 
 if __name__ == '__main__':
     unittest.main()

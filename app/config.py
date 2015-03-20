@@ -6,6 +6,12 @@ from ConfigParser import ConfigParser
 default_config_path = "~/.herdconfig"
 
 def get_config():
+    """ Reads the config file
+
+    first tries to read from the path in the environment variable
+    'herd_config_path' otherwise reads from the default config path
+
+    """
 
     config = ConfigParser()
     cfg_path = config_path()
@@ -14,10 +20,12 @@ def get_config():
         init()
         config.read(cfg_path)
 
-    return {
-        "build_base_path": config.get("Build", "base_path"),
-        "build_host": config.get("Build", "host")
-        }
+    config_dict = {}
+    for section in config.sections():
+        for item in config.items(section):
+            config_dict["{}_{}".format(section.lower(), item[0])] = item[1]
+
+    return config_dict
 
 def init():
     """ initalize the client configuration file """
@@ -39,3 +47,4 @@ def config_path():
     return os.path.expanduser(
         os.environ.get("herd_config_path", default_config_path))
 
+CONFIG = get_config()
