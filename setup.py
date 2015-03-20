@@ -7,7 +7,7 @@ setup(
     name = 'herd',
     version = v,
     packages = ['app'],
-    setup_requires = ['fabric', 'gnupg'],
+    install_requires = ['fabric', 'gnupg'],
     description = 'Herd Enables Rapid Deployment. A devops management tool.',
     author = 'Jesse B Miller',
     author_email = 'Jesse.Miller@adops.com',
