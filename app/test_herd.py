@@ -22,9 +22,10 @@ from security import (
     decrypt_and_verify_file,
     fetch_secret,
     distribute_secret,
-    DistributePlaintextError,
+    DistributeMalformedError,
     NotTrustedError,
-)
+    NotEncryptedError,
+    )
 
 from main import main, fmt_version
 from config import (
@@ -36,19 +37,23 @@ from config import (
 class HerdSecretsTest(unittest.TestCase):
 
     def setUp(self):
+        self.remove = []
+        os.environ['herd_config_path'] = "app/test.conf"
+
         # set up test keys
-        self.gpghome = str(uuid())
         # 2 trusted keys and one untrusted key
-        self.gpg = gnupg.GPG(gnupghome="app/unittest_gnupghome")
+        self.gpg = gnupg.GPG(homedir="app/test_gnupghome",
+                             binary=gnupg._util._which('gpg')[0])
 
         # set up identities
-        self.my_fingerprint = u'B133D6ED48CE0666BA77881C7C039C75475A96B2'
-        self.their_fingerprint = u'0FE187AE80702283E85D7241389171E911C19847'
-        self.untrusted_fingerprint = u"79985D6FF6E93B008F7C2872AFBAF11DA4791002"
+        self.my_fingerprint = "5064B59C5774AB9CCC514DD1CB8CD4CAF74E575E"
+        self.their_fingerprint = "FE833075A8562AEF493A1C7D0829580E390A2D72"
+        self.untrusted_fingerprint = "4A049AFD52104C5C072ABDDA83E4B2FC94F21313"
         self.recipients = [self.my_fingerprint, self.their_fingerprint]
 
         # set up test secret
         self.plainpath = str(uuid())
+        self.remove.append(self.plainpath)
         self.secret_a = str(uuid())
         self.secret_b = str(uuid())
         with open(self.plainpath, 'w') as plainfile:
@@ -60,10 +65,11 @@ class HerdSecretsTest(unittest.TestCase):
         # encrypt and sign something to me
         self.my_secret = str(uuid())
         self.my_cypherpath = str(uuid())
+        self.remove.append(self.my_cypherpath)
         self.my_cyphertext = self.gpg.encrypt(
             self.my_secret,
-            self.my_fingerprint,
-            sign=self.their_fingerprint,
+            str(self.my_fingerprint),
+            default_key=self.their_fingerprint,
             )
         with open(self.my_cypherpath, 'w') as my_cypherfile:
             my_cypherfile.write(self.my_cyphertext.data)
@@ -71,6 +77,7 @@ class HerdSecretsTest(unittest.TestCase):
         # encrypt but don't sign something to me
         self.unverified_secret = str(uuid())
         self.unverified_cypherpath = str(uuid())
+        self.remove.append(self.unverified_cypherpath)
         self.unverified_cyphertext = self.gpg.encrypt(
             self.my_secret,
             self.my_fingerprint)
@@ -80,10 +87,11 @@ class HerdSecretsTest(unittest.TestCase):
         # encrypt but sign with untrusted key
         self.untrusted_secret = str(uuid())
         self.untrusted_cypherpath = str(uuid())
+        self.remove.append(self.untrusted_cypherpath)
         self.untrusted_cyphertext = self.gpg.encrypt(
             self.my_secret,
-            self.my_fingerprint,
-            sign=self.untrusted_fingerprint
+            str(self.my_fingerprint),
+            default_key=self.untrusted_fingerprint
             )
         with open(self.untrusted_cypherpath, 'w') as untrusted_cypherfile:
             untrusted_cypherfile.write(self.untrusted_cyphertext.data)
@@ -104,25 +112,21 @@ class HerdSecretsTest(unittest.TestCase):
             try: os.rmdir(p)
             except: pass
 
-        map(lambda x: remove(x), [
-                self.gpghome,
-                self.plainpath,
-                self.my_cypherpath,
-                self.unverified_cypherpath,
-                self.untrusted_cypherpath,
-                ])
+        map(lambda x: remove(x), self.remove)
 
     def test_create_signed_encrypted_secret(self):
         """ herd should create signed then encrypted secret messages """
 
         # happy path
-        cyperpath = sign_then_encrypt_file(
+        cypherpath = sign_then_encrypt_file(
             self.plainpath,
+            self.my_fingerprint,
             self.recipients,
             )
+        self.remove.append(cypherpath)
 
         # confirm assumptions
-        with open(cyperpath, 'r') as cfile, open(self.plainpath, 'r') as pfile:
+        with open(cypherpath, 'r') as cfile, open(self.plainpath, 'r') as pfile:
             decrypted_data = self.gpg.decrypt_file(cfile)
             # it decrypts to the original text
             self.assertEqual(pfile.read(), decrypted_data.data)
@@ -135,11 +139,59 @@ class HerdSecretsTest(unittest.TestCase):
     def test_distribute_secret(self):
         """ herd should only distribute encrypted messages """
         #set up
-        cypherpath = sign_then_encrypt_file(self.plainpath, self.recipients)
+        cypherpath = sign_then_encrypt_file(
+            self.plainpath,
+            self.my_fingerprint,
+            self.recipients,
+            )
+        self.remove.append(cypherpath)
 
-        # excersize SUT (distribute the plainpath)
-        with self.assertRaises(DistributePlaintextError):
-            distribute_secret(self.plainpath)
+        # excersize SUT (distribute tampered with cypherfiles)
+        # bad file extension
+        bad_extension_path = cypherpath[:-4] + ".gpg"
+        self.remove.append(bad_extension_path)
+        cypherfile = open(cypherpath, 'r')
+        cyphertext = cypherfile.read()
+        with open(bad_extension_path, 'w') as bad_extension_file:
+            bad_extension_file.write(cyphertext)
+        with self.assertRaises(DistributeMalformedError):
+            distribute_secret(bad_extension_path)
+
+        def assert_malformed_exception(malformed_path, malformed):
+            with open(malformed_path, 'w') as malfile:
+                malfile.write(malformed)
+            with self.assertRaises(DistributeMalformedError):
+                distribute_secret(malformed_path)
+
+
+        # file not correctly armored
+        malformed_path = "{}.sec".format(str(uuid()))
+        self.remove.append(malformed_path)
+
+        # incorrect first line
+        malformed = "-" + cyphertext
+        assert_malformed_exception(malformed_path, malformed)
+
+        # incorrect last line
+        malformed = cyphertext + "-"
+        assert_malformed_exception(malformed_path, malformed)
+
+        # long line
+        mal_lines = cyphertext.split('\n')
+        mal_lines [-5] += "longlinelonglinelonglinelonglinelonglinelongline"
+        malformed = '\n'.join(mal_lines)
+        assert_malformed_exception(malformed_path, malformed)
+
+        # inappropriate whitespace
+        mal_lines = cyphertext.split('\n')
+        mal_lines [-5] = "xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx"
+        malformed = '\n'.join(mal_lines)
+        assert_malformed_exception(malformed_path, malformed)
+
+        mal_lines = cyphertext.split('\n')
+        mal_lines [-5] += "x"
+        malformed = '\n'.join(mal_lines)
+        assert_malformed_exception(malformed_path, malformed)
 
         # confirm that os.system did not call any command
         self.assertEqual(os.system.call_count, 0)
@@ -152,17 +204,18 @@ class HerdSecretsTest(unittest.TestCase):
             cypherpath, os.path.basename(cypherpath))
         os.system.assert_called_once_with(scp_cmd)
 
-    def test_get_secret(self):
+    def test_fetch_secret(self):
         """ herd should be able to download a secret file """
         # set up
         secret_name = str(uuid())
+        mock_fetcher = Mock()
 
         # run SUT
-        fetch_secret(secret_name)
+        fetch_secret(secret_name, mock_fetcher)
 
         # confirm assumptions
-        expected_str = "wget sec.iadops.com/{}".format(secret_name)
-        self.mock_system.assert_called_once_with(expected_str)
+        expected_str = "sec.iadops.com/{}".format(secret_name)
+        mock_fetcher.assert_called_once_with(expected_str)
 
     def test_decrypt_and_verify_my_secret(self):
         """ herd should decrypt and verify secrets intended for me
@@ -180,15 +233,15 @@ class HerdSecretsTest(unittest.TestCase):
 
         # no signiture
         with self.assertRaises(NotTrustedError):
-            plaintext = decrypt_and_verify(self.unverified_cypherpath)
+            plaintext = decrypt_and_verify_file(self.unverified_cypherpath)
 
         # untrusted signiture
         with self.assertRaises(NotTrustedError):
-            plaintext = decrypt_and_verify(self.untrusted_cypherpath)
+            plaintext = decrypt_and_verify_file(self.untrusted_cypherpath)
 
         # no encryption
         with self.assertRaises(NotEncryptedError):
-            plaintext = decrypt_and_verify(self.plainpath)
+            plaintext = decrypt_and_verify_file(self.plainpath)
 
     @unittest.skip("Creating keys will be done manually until after 1.0")
     def test_create_key(self):
