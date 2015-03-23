@@ -18,7 +18,7 @@ def sign_then_encrypt_file(path, signer, recipients, secret_name=None):
     if not secret_name:
         secret_name = os.path.basename(path)
 
-    gpg = gnupg.GPG(homedir=get_config()['security_gnupg_home'],
+    gpg = gnupg.GPG(homedir=get_config().get('security_gnupg_home', '~/.gnupg'),
                     binary=gnupg._util._which('gpg')[0])
 
     with open(path, 'r') as plainfile:
@@ -35,16 +35,14 @@ def sign_then_encrypt_file(path, signer, recipients, secret_name=None):
     with open(sec_path, 'w') as cypherfile:
         cypherfile.write(cyphertext)
 
-    return sec_path
+    return os.path.abspath(sec_path)
 
-def decrypt_and_verify_file(path):
+def decrypt_and_verify_file(cypherfile):
     """ decrypt and verify the encrypted secret """
-    print "---> decrypting and verifying {}".format(path)
-    gpg = gnupg.GPG(homedir=get_config()['security_gnupg_home'],
+    gpg = gnupg.GPG(homedir=get_config().get('security_gnupg_home', '~/.gnupg'),
                     binary=gnupg._util._which('gpg')[0])
-    with open(path, 'r') as cypherfile:
-        plain = gpg.decrypt_file(cypherfile)
-        print plain.stderr
+    plain = gpg.decrypt_file(cypherfile)
+    print plain.stderr
 
     try:
         assert plain.ok
@@ -65,7 +63,9 @@ def decrypt_and_verify_file(path):
 def fetch_secret(secret_name, fetcher=urlopen):
     """ Return a secret fetched from the secret store """
     store = get_config()['security_remote_secret_store']
-    return fetcher("{}/{}".format(store, secret_name))
+    url = "https://{}/secret/{}".format(store, secret_name)
+    print url
+    return fetcher(url)
 
 def distribute_secret(path):
     """ upload the secret file to the secret store.
@@ -126,7 +126,7 @@ def distribute_secret(path):
     assert_armord_message(path)
     check_hash(path)
 
-    remote_path = "{}/{}".format(
+    remote_path = "{}:/var/secret/{}".format(
         get_config()['security_remote_secret_store'],
         os.path.basename(path)
         )

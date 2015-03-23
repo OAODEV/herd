@@ -200,7 +200,7 @@ class HerdSecretsTest(unittest.TestCase):
         distribute_secret(cypherpath)
 
         # confirm that os.system called the correct scp command
-        scp_cmd = "scp {} sec.iadops.com/{}".format(
+        scp_cmd = "scp {} sec.iadops.com:/var/secret/{}".format(
             cypherpath, os.path.basename(cypherpath))
         os.system.assert_called_once_with(scp_cmd)
 
@@ -214,7 +214,7 @@ class HerdSecretsTest(unittest.TestCase):
         fetch_secret(secret_name, mock_fetcher)
 
         # confirm assumptions
-        expected_str = "sec.iadops.com/{}".format(secret_name)
+        expected_str = "https://sec.iadops.com/secret/{}".format(secret_name)
         mock_fetcher.assert_called_once_with(expected_str)
 
     def test_decrypt_and_verify_my_secret(self):
@@ -226,22 +226,26 @@ class HerdSecretsTest(unittest.TestCase):
         """
 
         # happy path
-        plaintext = decrypt_and_verify_file(self.my_cypherpath)
+        with open(self.my_cypherpath, 'r') as cypherfile:
+            plaintext = decrypt_and_verify_file(cypherfile)
 
         # confirm assumptions
         self.assertEqual(plaintext, self.my_secret)
 
         # no signiture
-        with self.assertRaises(NotTrustedError):
-            plaintext = decrypt_and_verify_file(self.unverified_cypherpath)
+        with open(self.unverified_cypherpath, 'r') as unverified_cypherfile:
+            with self.assertRaises(NotTrustedError):
+                plaintext = decrypt_and_verify_file(unverified_cypherfile)
 
         # untrusted signiture
-        with self.assertRaises(NotTrustedError):
-            plaintext = decrypt_and_verify_file(self.untrusted_cypherpath)
+        with open(self.untrusted_cypherpath, 'r') as untrusted_cypherfile:
+            with self.assertRaises(NotTrustedError):
+                plaintext = decrypt_and_verify_file(untrusted_cypherfile)
 
         # no encryption
-        with self.assertRaises(NotEncryptedError):
-            plaintext = decrypt_and_verify_file(self.plainpath)
+        with open(self.plainpath, 'r') as plainfile:
+            with self.assertRaises(NotEncryptedError):
+                plaintext = decrypt_and_verify_file(plainfile)
 
     @unittest.skip("Creating keys will be done manually until after 1.0")
     def test_create_key(self):
