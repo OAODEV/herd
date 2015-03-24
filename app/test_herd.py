@@ -157,41 +157,62 @@ class HerdSecretsTest(unittest.TestCase):
         with self.assertRaises(DistributeMalformedError):
             distribute_secret(bad_extension_path)
 
-        def assert_malformed_exception(malformed_path, malformed):
+        # check for correct errors when file not correctly encrypted
+        def assert_malformed_exception(malformed_path, malformed, message):
             with open(malformed_path, 'w') as malfile:
                 malfile.write(malformed)
-            with self.assertRaises(DistributeMalformedError):
+            with self.assertRaises(DistributeMalformedError) as e:
                 distribute_secret(malformed_path)
+            self.assertEqual(str(e.exception), message)
 
-
-        # file not correctly armored
-        malformed_path = "{}.sec".format(str(uuid()))
+        malformed_path = os.path.join(
+            os.path.dirname(cypherpath),
+            "mal_{}".format(os.path.basename(cypherpath)),
+            )
         self.remove.append(malformed_path)
+
+        # hash missmatch
+        mal_lines = cyphertext.split('\n')
+        mal_lines [-5] += "x"
+        malformed = '\n'.join(mal_lines)
+        assert_malformed_exception(malformed_path, malformed,
+                                   "Hash missmatch")
 
         # incorrect first line
         malformed = "-" + cyphertext
-        assert_malformed_exception(malformed_path, malformed)
+        assert_malformed_exception(malformed_path, malformed,
+                                   "Missing or malformed Armor Header Line")
 
         # incorrect last line
         malformed = cyphertext + "-"
-        assert_malformed_exception(malformed_path, malformed)
+        assert_malformed_exception(malformed_path, malformed,
+                                   "Missing or malformed Armor Tail")
 
         # long line
         mal_lines = cyphertext.split('\n')
         mal_lines [-5] += "longlinelonglinelonglinelonglinelonglinelongline"
         malformed = '\n'.join(mal_lines)
-        assert_malformed_exception(malformed_path, malformed)
+        assert_malformed_exception(malformed_path, malformed,
+                                    "Line longer than 78 characters")
+
+        mal_lines = cyphertext.split('\n')
+        mal_lines = filter(lambda x: x!='', mal_lines)
+        malformed = '\n'.join(mal_lines) + '\n'
+        assert_malformed_exception(malformed_path, malformed,
+                                   "Missing blank line")
+
+        mal_lines = cyphertext.split('\n')
+        mal_lines = mal_lines[:2] + mal_lines[-2:]
+        malformed = '\n'.join(mal_lines)
+        assert_malformed_exception(malformed_path, malformed,
+                                   "No ASCII-Armored data")
 
         # inappropriate whitespace
         mal_lines = cyphertext.split('\n')
-        mal_lines [-5] = "xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx"
+        mal_lines [2] = "xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx"
         malformed = '\n'.join(mal_lines)
-        assert_malformed_exception(malformed_path, malformed)
-
-        mal_lines = cyphertext.split('\n')
-        mal_lines [-5] += "x"
-        malformed = '\n'.join(mal_lines)
-        assert_malformed_exception(malformed_path, malformed)
+        assert_malformed_exception(malformed_path, malformed,
+                                   "Whitespace in ASCII-Armored data")
 
         # confirm that os.system did not call any command
         self.assertEqual(os.system.call_count, 0)
@@ -234,13 +255,16 @@ class HerdSecretsTest(unittest.TestCase):
 
         # no signiture
         with open(self.unverified_cypherpath, 'r') as unverified_cypherfile:
-            with self.assertRaises(NotTrustedError):
+            with self.assertRaises(NotTrustedError) as e:
                 plaintext = decrypt_and_verify_file(unverified_cypherfile)
+        self.assertEqual(str(e.exception), "Invalid signiture")
 
         # untrusted signiture
         with open(self.untrusted_cypherpath, 'r') as untrusted_cypherfile:
-            with self.assertRaises(NotTrustedError):
+            with self.assertRaises(NotTrustedError) as e:
                 plaintext = decrypt_and_verify_file(untrusted_cypherfile)
+        self.assertEqual(str(e.exception),
+                         "Untrusted Key (OAO Tech) not fully trusted")
 
         # no encryption
         with open(self.plainpath, 'r') as plainfile:
