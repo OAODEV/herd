@@ -24,7 +24,7 @@ from security import (
     distribute_secret,
     DistributeMalformedError,
     NotTrustedError,
-    NotEncryptedError,
+    DecryptionError,
     )
 
 from main import main, fmt_version
@@ -268,7 +268,7 @@ class HerdSecretsTest(unittest.TestCase):
 
         # no encryption
         with open(self.plainpath, 'r') as plainfile:
-            with self.assertRaises(NotEncryptedError):
+            with self.assertRaises(DecryptionError):
                 plaintext = decrypt_and_verify_file(plainfile)
 
     @unittest.skip("Creating keys will be done manually until after 1.0")

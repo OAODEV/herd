@@ -57,7 +57,7 @@ def decrypt_and_verify_file(cypherfile):
     print plain.stderr
 
     try: assert plain.ok
-    except: raise NotEncryptedError
+    except: raise DecryptionError
 
     try: assert plain.valid
     except: raise NotTrustedError("Invalid signiture")
@@ -161,5 +161,5 @@ class DistributeMalformedError(Exception):
 class NotTrustedError(Exception):
     """ signiture not trusted """
 
-class NotEncryptedError(Exception):
-    """ Non-enctypted data was treated as encrypted data """
+class DecryptionError(Exception):
+    """ Decryption did not complete successfully """
