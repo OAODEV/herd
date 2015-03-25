@@ -1,9 +1,9 @@
 FROM ubuntu
 MAINTAINER jesse.miller@adops.com
 
-RUN sudo apt-get update
+RUN sudo apt-get update -y
 
-RUN apt-get install -y git python fabric python-pip
+RUN apt-get install -y git python python-pip python-dev
 RUN pip install mock
 
 # put mock .herdconfig in place
@@ -11,6 +11,7 @@ RUN echo "[Build]\nhost=mock\nbase_path=mock\n" > ~/.herdconfig
 
 ADD . /herd
 WORKDIR /herd
+RUN python setup.py install
 
 EXPOSE 9418
 

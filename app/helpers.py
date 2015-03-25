@@ -5,11 +5,7 @@ from uuid import uuid4 as uuid
 
 from fabric.api import *
 
-from config import get_config
-
-cfg = get_config()
-build_base_path = cfg['build_base_path']
-build_host = cfg['build_host']
+from config import CONFIG
 
 def manifest(section, option):
     config = ConfigParser(allow_no_value=True)
@@ -36,6 +32,10 @@ def on_host(host, cmd):
     with settings(host_string=host):
         run(cmd)
 
+def on_build_host(cmd):
+    """ run the command on the build host """
+    on_host(CONFIG['build_host'], cmd)
+
 def make_as_if_committed():
     """
     make the project as if the current state were committed
@@ -45,33 +45,33 @@ def make_as_if_committed():
 
     """
 
-    build_path = os.path.join(build_base_path, env.user, service_name())
-    on_host(build_host, "mkdir -p {}".format(build_path))
+    build_path = os.path.join(CONFIG['build_base_path'], env.user, service_name())
+    on_build_host("mkdir -p {}".format(build_path))
 
     rsync = "rsync -rlvz --filter=':- .gitignore' -e ssh --delete ./ {}:{}"
     with cd(project_root()):
-        local(rsync.format(build_host, build_path))
+        local(rsync.format(CONFIG['build_host'], build_path))
 
     test_build_name = "{}:unittesting".format(uuid())
 
     with cd(build_path):
-        on_host(build_host, "docker build -t {} .".format(test_build_name))
+        on_build_host("docker build -t {} .".format(test_build_name))
 
     return test_build_name
 
 def clean_up_runs():
     """ remove all stoped containers """
     with settings(warn_only=True):
-        on_host(build_host, "docker rm $(docker ps -aq)")
+        on_build_host("docker rm $(docker ps -aq)")
 
 def remove_build(build):
     """ remove the image of build """
     with settings(warn_only=True):
-        on_host(build_host, "docker rmi {}".format(build))
+        on_build_host("docker rmi {}".format(build))
 
 def run_cmd_in(build, cmd):
     """ run the command in the build """
-    on_host(build_host, "docker run {} {}".format(build, cmd))
+    on_build_host("docker run {} {}".format(build, cmd))
 
 def success():
     if os.path.exists("./success_art.txt"):
