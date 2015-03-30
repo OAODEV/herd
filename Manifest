@@ -1,6 +1,6 @@
 [Service]
 name=herd
-unittest_cmd=python app/test_herd.py
+unittest_cmd=python app/tests/test_herd.py
 accept_cmd=true
 service_port=9418
 
