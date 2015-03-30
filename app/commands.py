@@ -8,6 +8,7 @@ from fabric.api import *
 from helpers import *
 from config import config_path
 
+
 env.use_ssh_config = True
 
 def trivial(*args, **kwargs):

@@ -13,6 +13,8 @@ ADD . /herd
 WORKDIR /herd
 RUN python setup.py install
 
+ENV PYTHONPATH /herd/app
+
 EXPOSE 9418
 
 CMD git daemon --verbose \
