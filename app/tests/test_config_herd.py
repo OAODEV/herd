@@ -10,6 +10,7 @@ from config import (
     config_path,
     )
 
+
 class HerdConfigTests(unittest.TestCase):
 
     def setUp(self):
