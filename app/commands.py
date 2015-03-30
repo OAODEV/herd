@@ -11,8 +11,10 @@ from config import config_path
 
 env.use_ssh_config = True
 
+
 def trivial(*args, **kwargs):
     pass
+
 
 def setconfig(section, key, value):
     """ set the key to the value in .herdconfig """
@@ -23,6 +25,7 @@ def setconfig(section, key, value):
         conf.set(section, key, value)
     with open(config_path(), 'w') as configfile:
         conf.write(configfile)
+
 
 def _unittest_():
     """
@@ -37,14 +40,17 @@ def _unittest_():
     run_cmd_in(build, unittest_cmd())
     return build
 
+
 def unittest():
     build = _unittest_()
     clean_up_runs()
     remove_build(build)
 
+
 def localtest():
     with cd(project_root()):
         local(unittest_cmd())
+
 
 def integrate():
     """ integrate the current HEAD with the hub repo """
@@ -55,6 +61,7 @@ def integrate():
     clean_up_runs()
     remove_build(build)
     success()
+
 
 def pull():
     """ pull all changes for mainline and my branch from the hub repo """
@@ -70,6 +77,7 @@ def pull():
         # if the remote exists, pull it
         with settings(warn_only=True):
             local("git pull hub {}".format(branch))
+
 
 def deploy(image_name, conf_path, host, port, release_name=''):
     """
@@ -88,6 +96,7 @@ def deploy(image_name, conf_path, host, port, release_name=''):
     Release(image_name, conf_path, release_name).deploy(host, port)
 
     print "* {} was run at {}:{}".format(image_name, host, port)
+
 
 class Release(object):
     """
@@ -187,8 +196,9 @@ class Release(object):
         """
         Build the command that will run the service with the proper config
 
-        gather the -e flags for docker from the config pairs and the environment
-        pairs. Create the -p flag based on the manifest and the release port
+        gather the -e flags for docker from the config pairs and the
+        environment pairs. Create the -p flag based on the manifest and the
+        release port.
 
         """
 
@@ -213,4 +223,3 @@ class Release(object):
             name_flag=name_flag,
             e_flags=e_flags,
             image_name=self.image_name)
-
