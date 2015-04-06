@@ -68,7 +68,8 @@ class HerdConfigureTests(unittest.TestCase):
 
         # the security module was used to sign then encrypt the conf
         # file to the correct recipients
-        expected_recipients = ['FE833075A8562AEF493A1C7D0829580E390A2D72']
+        expected_recipients = ['FE833075A8562AEF493A1C7D0829580E390A2D72',
+                               '5064B59C5774AB9CCC514DD1CB8CD4CAF74E575E']
         mock_sec.sign_then_encrypt_file.assert_called_once_with(
             conf_path, recipients=expected_recipients)
 
