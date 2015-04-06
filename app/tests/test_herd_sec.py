@@ -105,10 +105,9 @@ class HerdSecretsTest(unittest.TestCase):
         # happy path
         cpath = sign_then_encrypt_file(
             self.plainpath,
-            self.my_fingerprint,
-            self.recipients,
+            recipients=self.recipients,
             )
-        self.remove.append(cypherpath)
+        self.remove.append(cpath)
 
         # confirm assumptions
         with open(cpath, 'r') as cfile, open(self.plainpath, 'r') as pfile:

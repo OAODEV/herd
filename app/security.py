@@ -14,6 +14,7 @@ from Crypto.Hash import *
 
 default_hash_algo = "SHA256"
 
+
 def calculate_digest(data):
     hash_algo = get_config().get("security_hash_algo", default_hash_algo)
     hasher = getattr(Crypto.Hash, hash_algo)
@@ -21,7 +22,12 @@ def calculate_digest(data):
     h.update(data)
     return h.hexdigest()
 
-def sign_then_encrypt_file(path, signer, recipients, secret_name=None):
+
+def sign_then_encrypt_file(path,
+                           signer=None,
+                           recipients=[],
+                           secret_name=None
+                           ):
     """ sign then encrypt the file to the recipients.
 
     return a path to the encrypted file
@@ -31,6 +37,9 @@ def sign_then_encrypt_file(path, signer, recipients, secret_name=None):
     # set up the secret human readable name
     if not secret_name:
         secret_name = os.path.basename(path)
+
+    if not signer:
+        signer = get_config()['security_my_fingerprint']
 
     gpg = gnupg.GPG(homedir=get_config().get('security_gnupg_home', '~/.gnupg'),
                     binary=gnupg._util._which('gpg')[0])
@@ -67,11 +76,13 @@ def decrypt_and_verify_file(cypherfile):
 
     return plain.data
 
+
 def fetch_secret(secret_name, fetcher=urlopen):
     """ Return a secret fetched from the secret store """
     store = get_config()['security_remote_secret_store']
     url = "https://{}/secret/{}".format(store, secret_name)
     return fetcher(url)
+
 
 def distribute_secret(path):
     """ upload the secret file to the secret store.
@@ -154,12 +165,16 @@ def distribute_secret(path):
         os.path.basename(path)
         )
     os.system("scp {} {}".format(path, remote_path))
+    return os.path.basename(path)
+
 
 class DistributeMalformedError(Exception):
     """ attempted to distribute an incorrect secret file """
 
+
 class NotTrustedError(Exception):
     """ signiture not trusted """
+
 
 class DecryptionError(Exception):
     """ Decryption did not complete successfully """

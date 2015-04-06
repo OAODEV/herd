@@ -1,19 +1,104 @@
 import os
+import datetime
 
+from itertools import islice
 from ConfigParser import ConfigParser
 from StringIO import StringIO
 from uuid import uuid4 as uuid
 from fabric.api import *
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    DateTime,
+    )
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 from helpers import *
-from config import config_path
-
+from config import (
+    get_config,
+    config_path
+    )
+import security
 
 env.use_ssh_config = True
 
 
 def trivial(*args, **kwargs):
     pass
+
+Base = declarative_base()
+
+
+class Release(Base):
+    __tablename__ = 'releases'
+
+    id_ = Column(Integer, primary_key=True)
+    build = Column(String(1024))
+    config = Column(String(1024))
+    created_datetime = Column(DateTime, default=datetime.datetime.utcnow)
+
+    def __repr__(self):
+        return "<Release: build={}, config={}, id={} created_datetime={}>" \
+            .format(self.build, self.config, self.id_, self.created_datetime)
+
+    def __str__(self):
+        return "Release {}: [{}] {}, {}".format(
+            self.id_, self.created_datetime, self.build, self.config)
+
+
+class ReleaseStore(object):
+    """ stores build, release pairs """
+
+    def __init__(self, db_uri):
+        engine = create_engine(db_uri)
+        Base.metadata.create_all(engine)
+        self.session = sessionmaker(bind=engine)()
+
+    def put(self, build, config):
+        """ put a new release into the store """
+
+        new_release = Release(build=build, config=config)
+        self.session.add(new_release)
+        self.session.commit()
+        return new_release
+
+    def get(self, id_):
+        """ get a release by it's id """
+        return self.session.query(Release).filter(
+            Release.id_==str(id_)).first()
+
+    def list(self, slice_start=0, slice_end=10):
+        return list(
+            islice(
+                self.session.query(Release).all(),
+                slice_start,
+                slice_end
+                )
+            )
+
+
+def configure(build_name,
+              config_path,
+              deploy_keys=[],
+              __security_module__=security,
+              __release_store__=None
+              ):
+    """ create a release from a build and a path to a config file """
+    if __release_store__ is None:
+        __release_store__ = ReleaseStore(get_config()['release_store_db'])
+
+    if deploy_keys == []:
+        deploy_keys = get_config()['security_deploy_fingerprints'].split(',')
+    cypherpath = __security_module__.sign_then_encrypt_file(
+        config_path,
+        recipients = deploy_keys,
+        )
+    config_name = __security_module__.distribute_secret(cypherpath)
+    release = __release_store__.put(build_name, config_name)
+    return release
 
 
 def setconfig(section, key, value):
@@ -97,7 +182,7 @@ def deploy(image_name, conf_path, host, port, release_name=''):
 
     print "* {} was run at {}:{}".format(image_name, host, port)
 
-
+'''
 class Release(object):
     """
     A docker run command that handles config management
@@ -223,3 +308,4 @@ class Release(object):
             name_flag=name_flag,
             e_flags=e_flags,
             image_name=self.image_name)
+'''
