@@ -1,7 +1,6 @@
 FROM ubuntu
 MAINTAINER jesse.miller@adops.com
 
-RUN ls
 RUN sudo apt-get update -y
 
 RUN apt-get install -y --fix-missing git python python-pip python-dev libpq-dev
