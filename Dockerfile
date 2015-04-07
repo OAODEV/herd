@@ -1,7 +1,7 @@
 FROM ubuntu
 MAINTAINER jesse.miller@adops.com
 
-RUN sudo apt-get update -y -f
+RUN sudo apt-get update -y
 
 RUN apt-get install -y -f git python python-pip python-dev libpq-dev
 RUN pip install mock

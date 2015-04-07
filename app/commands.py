@@ -118,7 +118,7 @@ def setconfig(section, key, value):
         conf.write(configfile)
 
 
-def _unittest_():
+def _unittest_(build_flag=None):
     """
     Run the unit tests on the current state of the project root.
 
@@ -127,13 +127,16 @@ def _unittest_():
 
     """
 
-    build = make_as_if_committed()
+    build = make_as_if_committed(build_flag)
     run_cmd_in(build, unittest_cmd())
     return build
 
 
-def unittest():
-    build = _unittest_()
+def unittest(*args):
+    build_flag = ''
+    if 'rebuild' in args:
+        build_flag = "--no-cache "
+    build = _unittest_(build_flag)
     clean_up_runs()
     remove_build(build)
 
@@ -143,11 +146,13 @@ def localtest():
         local(unittest_cmd())
 
 
-def integrate():
+def integrate(*args):
     """ integrate the current HEAD with the hub repo """
-
+    build_flag = ''
+    if 'rebuild' in args:
+        build_flag = "--no-cache "
     pull()
-    build = _unittest_()
+    build = _unittest_(build_flag)
     push()
     clean_up_runs()
     remove_build(build)
