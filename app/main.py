@@ -40,13 +40,16 @@ def main():
         print "herd version", fmt_version()
         sys.exit()
 
-    allowed_commands = ['pull',
+    allowed_commands = ['configure',
+                        'configs',
+                        'pull',
                         'integrate',
                         'localtest',
                         'unittest',
                         'deploy',
                         'setconfig',
-                        'trivial']
+                        'trivial',
+                        ]
     if args.command in allowed_commands:
         # don't allow any arguments to include illegal characters
         for illegal in ['&', ';', '|', '>', '<']:

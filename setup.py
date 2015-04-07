@@ -7,7 +7,7 @@ setup(
     name='herd',
     version=v,
     packages=['app'],
-    install_requires=['fabric', 'gnupg', 'sqlalchemy'],
+    install_requires=['fabric', 'gnupg', 'sqlalchemy', 'psycopg2'],
     description='Herd Enables Rapid Deployment. A devops management tool.',
     author='Jesse B Miller',
     author_email='Jesse.Miller@adops.com',

@@ -101,6 +101,12 @@ def configure(build_name,
     return release
 
 
+def configs():
+    """ list available configs """
+    with settings(host_string=get_config()['security_remote_secret_store']):
+        run("ls /var/secret")
+
+
 def setconfig(section, key, value):
     """ set the key to the value in .herdconfig """
     conf = ConfigParser()
