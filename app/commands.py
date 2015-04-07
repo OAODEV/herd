@@ -107,6 +107,14 @@ def configs():
         run("ls /var/secret")
 
 
+def releases():
+    """ list available releases """
+    release_store = ReleaseStore(get_config()['release_store_db'])
+    for r in release_store.list():
+        print r
+
+
+
 def setconfig(section, key, value):
     """ set the key to the value in .herdconfig """
     conf = ConfigParser()

@@ -42,6 +42,7 @@ def main():
 
     allowed_commands = ['configure',
                         'configs',
+                        'releases',
                         'pull',
                         'integrate',
                         'localtest',
