@@ -1,9 +1,9 @@
 FROM ubuntu
 MAINTAINER jesse.miller@adops.com
 
-RUN sudo apt-get update -y
+RUN sudo apt-get update
 
-RUN apt-get install -y git python python-pip python-dev
+RUN apt-get install -y git python python-pip python-dev libpq-dev
 RUN pip install mock
 
 # put mock .herdconfig in place
