@@ -1,10 +1,9 @@
 import os
 import datetime
-
+import base64
 from itertools import islice
 from ConfigParser import ConfigParser
 from StringIO import StringIO
-from uuid import uuid4 as uuid
 from fabric.api import *
 from sqlalchemy import (
     create_engine,
@@ -30,6 +29,104 @@ def trivial(*args, **kwargs):
     pass
 
 Base = declarative_base()
+
+
+def stage_config(release, host):
+    """ stage a config file on the a host """
+    cypherfile = security.fetch_secret(release.config)
+    plaintext = security.decrypt_and_verify_file(cypherfile)
+    stage_name = base64.urlsafe_b64encode(os.urandom(32))
+    config_stage_path = os.path.join(
+        get_config()['deploy_config_stage_path'],
+        stage_name,
+        )
+    with settings(host_string=host):
+        put(StringIO(plaintext), config_stage_path)
+    return stage_name
+
+
+def wipe_config(host, stage_name):
+    """ wipe the staged config from the host """
+    with settings(host_string=host):
+        run("shred -u {}/{}".format(
+                get_config()['deploy_config_stage_path'],
+                stage_name,
+                )
+            )
+
+
+def get_manifest(release):
+    """ return the port that the release will expose it's service on
+
+    @TODO update this to use docker image labels when that's available
+
+    """
+
+    with settings(host_string="qa.iadops.com"):
+        manifest_string = run(
+            "docker run {} cat /Manifest".format(release.build))
+
+        manifest = ConfigParser(allow_no_value=True)
+        manifest_file = StringIO(manifest_string)
+        manifest.readfp(manifest_file)
+        return manifest
+
+def execute_release(release, host, port, stage_name):
+    """ run the build on the host with the config
+
+    if port is None, use the service port
+
+    """
+
+    manifest = get_manifest(release)
+
+    # create p flag
+    service_port = manifest.get("Service", "service_port")
+    if port is None:
+        port = service_port
+    p_flag = "-p {}:{}".format(port, service_port)
+
+    # create envfile flag
+    envfile_flag = "--env-file={}/{}".format(
+        get_config()['deploy_config_stage_path'],
+        stage_name,
+        )
+
+    # create environmental dependency flags...
+    env_deps = manifest.items("Dependencies")
+    e_flags = ' '.join([
+            "-e {}".format(dep[0].capitalize())
+            for dep
+            in env_deps
+            ])
+
+    cmd = "docker run -d {p_flag} {envfile_flag} {e_flags} {build_name}".format(
+        p_flag=p_flag,
+        envfile_flag=envfile_flag,
+        e_flags=e_flags,
+        build_name=release.build,
+        )
+    with settings(host_string=host):
+        run(cmd)
+
+
+def deploy(release_id, host):
+    """ look up the release, and deploy it """
+    release_store = ReleaseStore(get_config()['release_store_db'])
+    __deploy__(release_store.get(release_id), host)
+
+
+def __deploy__(release, host):
+    """ deploy the release on the host """
+    # set host to host and port to port if port is in the host string
+    # and to None otherwise
+    host_port = host.split(':') + [None]
+    host, port = tuple(host_port[0:2])
+    stage_name = stage_config(release, host)
+    execute_release(release, host, port, stage_name)
+    wipe_config(host, stage_name)
+    print
+    print "---> Success,", release, "was executed on", "{}:{}".format(host, port)
 
 
 class Release(Base):
@@ -98,6 +195,7 @@ def configure(build_name,
         )
     config_name = __security_module__.distribute_secret(cypherpath)
     release = __release_store__.put(build_name, config_name)
+    print "---> New release, ", release
     return release
 
 
@@ -112,7 +210,6 @@ def releases():
     release_store = ReleaseStore(get_config()['release_store_db'])
     for r in release_store.list():
         print r
-
 
 
 def setconfig(section, key, value):
@@ -182,7 +279,7 @@ def pull():
         with settings(warn_only=True):
             local("git pull hub {}".format(branch))
 
-
+'''
 def deploy(image_name, conf_path, host, port, release_name=''):
     """
     Create a release from the image and conf then run on the host
@@ -201,7 +298,7 @@ def deploy(image_name, conf_path, host, port, release_name=''):
 
     print "* {} was run at {}:{}".format(image_name, host, port)
 
-'''
+
 class Release(object):
     """
     A docker run command that handles config management

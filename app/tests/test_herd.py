@@ -7,6 +7,7 @@ from test_herd_sec import HerdSecretsTest
 from test_herd_unittest import HerdUnittestTests
 from test_config_herd import HerdConfigTests
 from test_herd_configure import HerdConfigureTests
+from test_herd_deploy import HerdDeployTests
 
 
 class HerdMainTests(unittest.TestCase):

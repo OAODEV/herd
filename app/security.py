@@ -59,7 +59,11 @@ def sign_then_encrypt_file(path,
     return os.path.abspath(sec_path)
 
 def decrypt_and_verify_file(cypherfile):
-    """ decrypt and verify the encrypted secret """
+    """ decrypt and verify the encrypted secret
+
+    File -> String
+
+    """
     gpg = gnupg.GPG(homedir=get_config().get('security_gnupg_home', '~/.gnupg'),
                     binary=gnupg._util._which('gpg')[0])
     plain = gpg.decrypt_file(cypherfile)
@@ -78,7 +82,11 @@ def decrypt_and_verify_file(cypherfile):
 
 
 def fetch_secret(secret_name, fetcher=urlopen):
-    """ Return a secret fetched from the secret store """
+    """ Return a secret fetched from the secret store
+
+    String -> File
+
+    """
     store = get_config()['security_remote_secret_store']
     url = "https://{}/secret/{}".format(store, secret_name)
     return fetcher(url)

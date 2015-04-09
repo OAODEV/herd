@@ -45,7 +45,11 @@ def make_as_if_committed(build_flag):
 
     """
 
-    build_path = os.path.join(CONFIG['build_base_path'], env.user, service_name())
+    build_path = os.path.join(
+        CONFIG['build_base_path'],
+        env.user,
+        service_name()
+        )
     on_build_host("mkdir -p {}".format(build_path))
 
     rsync = "rsync -rlvz --filter=':- .gitignore' -e ssh --delete ./ {}:{}"
