@@ -40,9 +40,18 @@ the CI server (Circle CI?) will build and test the commit.
 
     herd integrate
 
+### configure
+
+Creates a release object ready for deployment by creating a record in the release store (more info in `app/tests/test.conf`).
+
+    # herd configure <build name> <config path>
+
+The config format has changed, it's now docker's config format which is one `key=value` pair per line with no headers.
+
+Configure will print out the info for the newly created release. The id is used for deployment
+
 ### deploy
 
-*This api is likly to change soon* We intend to split the creation of releases
-and deployint the releases.
+Execute a release on a host. If the port portion of the host string is omitted, herd will try to use the same port that the service in the release exposes.
 
-    herd deploy <image name> <config path> <host> <port> <opt_release>
+    herd deploy <release id> <host[:port]>
