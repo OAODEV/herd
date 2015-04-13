@@ -5,7 +5,7 @@ import commands
 
 from config import default_config_path
 
-__version__ = (0, 4, 1, 'beta')
+__version__ = (1, 0, 0, 'rc1')
 
 def fmt_version(type='long', v=__version__):
     """ format the version in long or short form """

@@ -63,6 +63,7 @@ def get_manifest(release):
     """
 
     with settings(host_string="qa.iadops.com"):
+        run("docker pull {}".format(release.build))
         manifest_string = run(
             "docker run {} cat /Manifest".format(release.build))
 
