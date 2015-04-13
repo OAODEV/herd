@@ -8,7 +8,7 @@ Herd Enables Rapid Deployment. A devops management tool.
 
 ## Commands
 
-    herd [-version] [--help | -h] <command> [<args>]
+    herd [--version] [--help | -h] <command> [<args>]
 
 ### pull
 
@@ -44,11 +44,19 @@ the CI server (Circle CI?) will build and test the commit.
 
 Creates a release object ready for deployment by creating a record in the release store (more info in `app/tests/test.conf`).
 
-    # herd configure <build name> <config path>
+    herd configure <build name> <config path>
 
 The config format has changed, it's now docker's config format which is one `key=value` pair per line with no headers.
 
 Configure will print out the info for the newly created release. The id is used for deployment
+
+### releases
+
+Lists some recent releases.
+
+    herd releases
+
+This is a bandaid and temporary solution for the problem of identifying what releases are available for deployment.
 
 ### deploy
 
