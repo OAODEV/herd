@@ -46,6 +46,7 @@ def sign_then_encrypt_file(path,
 
     with open(path, 'r') as plainfile:
         crypt = gpg.encrypt(plainfile.read(), *recipients, default_key=signer)
+        print crypt.stderr
         assert crypt.ok
         cyphertext = crypt.data
         digest = calculate_digest(cyphertext)
