@@ -55,14 +55,14 @@ def wipe_config(host, stage_name):
             )
 
 
-def get_manifest(release):
+def get_manifest(release, host):
     """ return the port that the release will expose it's service on
 
     @TODO update this to use docker image labels when that's available
 
     """
 
-    with settings(host_string="qa.iadops.com"):
+    with settings(host_string=host):
         run("docker pull {}".format(release.build))
         manifest_string = run(
             "docker run {} cat /Manifest".format(release.build))
@@ -79,7 +79,7 @@ def execute_release(release, host, port, stage_name):
 
     """
 
-    manifest = get_manifest(release)
+    manifest = get_manifest(release, host)
 
     # create p flag
     service_port = manifest.get("Service", "service_port")

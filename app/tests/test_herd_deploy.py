@@ -162,6 +162,9 @@ class HerdDeployTests(unittest.TestCase):
         # should set host string to the host
         self.mock_settings.assert_called_once_with(host_string=host)
 
+        # should get the manifest from the deploy target
+        mock_get_manifest.assert_called_once_with(self.release, host)
+
     def test_deploy(self):
         """ deploy should stage, execute then wipe """
         # Set up
