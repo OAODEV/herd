@@ -5,7 +5,7 @@ import commands
 
 from config import default_config_path
 
-__version__ = (0, 4, 1, 'beta')
+__version__ = (1, 0, 0, 'rc1')
 
 def fmt_version(type='long', v=__version__):
     """ format the version in long or short form """
@@ -40,13 +40,17 @@ def main():
         print "herd version", fmt_version()
         sys.exit()
 
-    allowed_commands = ['pull',
+    allowed_commands = ['configure',
+                        'configs',
+                        'releases',
+                        'pull',
                         'integrate',
                         'localtest',
                         'unittest',
                         'deploy',
                         'setconfig',
-                        'trivial']
+                        'trivial',
+                        ]
     if args.command in allowed_commands:
         # don't allow any arguments to include illegal characters
         for illegal in ['&', ';', '|', '>', '<']:

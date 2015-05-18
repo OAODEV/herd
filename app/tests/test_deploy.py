@@ -7,6 +7,7 @@ from ConfigParser import ConfigParser
 
 from commands import Release
 
+
 class HerdDeployTests(unittest.TestCase):
 
     def setUp(self):
@@ -53,6 +54,7 @@ class HerdDeployTests(unittest.TestCase):
 
     def test_can_pass(self):
         self.assertTrue(True)
+
 
 class MockRelease(Release):
 

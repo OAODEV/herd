@@ -14,6 +14,7 @@ from security import (
     DecryptionError,
     )
 
+
 class HerdSecretsTest(unittest.TestCase):
 
     def setUp(self):
@@ -38,9 +39,9 @@ class HerdSecretsTest(unittest.TestCase):
         self.secret_b = str(uuid())
         with open(self.plainpath, 'w') as plainfile:
             plainfile.writelines([
-                    "a={}\n".format(self.secret_a),
-                    "b={}\n".format(self.secret_b),
-                    ])
+                "a={}\n".format(self.secret_a),
+                "b={}\n".format(self.secret_b),
+                ])
 
         # encrypt and sign something to me
         self.my_secret = str(uuid())
@@ -87,10 +88,14 @@ class HerdSecretsTest(unittest.TestCase):
 
         # remove test files
         def remove(p):
-            try: os.remove(p)
-            except: pass
-            try: os.rmdir(p)
-            except: pass
+            try:
+                os.remove(p)
+            except:
+                pass
+            try:
+                os.rmdir(p)
+            except:
+                pass
 
         map(lambda x: remove(x), self.remove)
 
@@ -98,15 +103,14 @@ class HerdSecretsTest(unittest.TestCase):
         """ herd should create signed then encrypted secret messages """
 
         # happy path
-        cypherpath = sign_then_encrypt_file(
+        cpath = sign_then_encrypt_file(
             self.plainpath,
-            self.my_fingerprint,
-            self.recipients,
+            recipients=self.recipients,
             )
-        self.remove.append(cypherpath)
+        self.remove.append(cpath)
 
         # confirm assumptions
-        with open(cypherpath, 'r') as cfile, open(self.plainpath, 'r') as pfile:
+        with open(cpath, 'r') as cfile, open(self.plainpath, 'r') as pfile:
             decrypted_data = self.gpg.decrypt_file(cfile)
             # it decrypts to the original text
             self.assertEqual(pfile.read(), decrypted_data.data)
@@ -118,7 +122,7 @@ class HerdSecretsTest(unittest.TestCase):
 
     def test_distribute_secret(self):
         """ herd should only distribute encrypted messages """
-        #set up
+        # set up
         cypherpath = sign_then_encrypt_file(
             self.plainpath,
             self.my_fingerprint,
@@ -153,7 +157,7 @@ class HerdSecretsTest(unittest.TestCase):
 
         # hash missmatch
         mal_lines = cyphertext.split('\n')
-        mal_lines [-5] += "x"
+        mal_lines[-5] += "x"
         malformed = '\n'.join(mal_lines)
         assert_malformed_exception(malformed_path, malformed,
                                    "Hash missmatch")
@@ -170,13 +174,13 @@ class HerdSecretsTest(unittest.TestCase):
 
         # long line
         mal_lines = cyphertext.split('\n')
-        mal_lines [-5] += "longlinelonglinelonglinelonglinelonglinelongline"
+        mal_lines[-5] += "longlinelonglinelonglinelonglinelonglinelongline"
         malformed = '\n'.join(mal_lines)
         assert_malformed_exception(malformed_path, malformed,
-                                    "Line longer than 78 characters")
+                                   "Line longer than 78 characters")
 
         mal_lines = cyphertext.split('\n')
-        mal_lines = filter(lambda x: x!='', mal_lines)
+        mal_lines = filter(lambda x: x != '', mal_lines)
         malformed = '\n'.join(mal_lines) + '\n'
         assert_malformed_exception(malformed_path, malformed,
                                    "Missing blank line")
@@ -189,7 +193,7 @@ class HerdSecretsTest(unittest.TestCase):
 
         # inappropriate whitespace
         mal_lines = cyphertext.split('\n')
-        mal_lines [2] = "xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx"
+        mal_lines[2] = "xxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxx"
         malformed = '\n'.join(mal_lines)
         assert_malformed_exception(malformed_path, malformed,
                                    "Whitespace in ASCII-Armored data")
@@ -221,8 +225,9 @@ class HerdSecretsTest(unittest.TestCase):
     def test_decrypt_and_verify_my_secret(self):
         """ herd should decrypt and verify secrets intended for me
 
-        Herd should also fail to decrypt secrets not intended for me. and should
-        throw out secrets that don't have valid signitures from trusted keys.
+        Herd should also fail to decrypt secrets not intended for me. and
+        should throw out secrets that don't have valid signitures from trusted
+        keys.
 
         """
 
@@ -300,4 +305,3 @@ class HerdSecretsTest(unittest.TestCase):
     def test_wipe_ehpemeral_config(self):
         """ herd should wipe the config file when finished with it """
         self.fail("test not implemented")
-

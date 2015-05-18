@@ -5,7 +5,7 @@ from uuid import uuid4 as uuid
 
 from fabric.api import *
 
-from config import CONFIG
+from config import CONFIG, get_config
 
 def manifest(section, option):
     config = ConfigParser(allow_no_value=True)
@@ -36,7 +36,7 @@ def on_build_host(cmd):
     """ run the command on the build host """
     on_host(CONFIG['build_host'], cmd)
 
-def make_as_if_committed():
+def make_as_if_committed(build_flag):
     """
     make the project as if the current state were committed
 
@@ -45,7 +45,11 @@ def make_as_if_committed():
 
     """
 
-    build_path = os.path.join(CONFIG['build_base_path'], env.user, service_name())
+    build_path = os.path.join(
+        CONFIG['build_base_path'],
+        env.user,
+        service_name()
+        )
     on_build_host("mkdir -p {}".format(build_path))
 
     rsync = "rsync -rlvz --filter=':- .gitignore' -e ssh --delete ./ {}:{}"
@@ -55,7 +59,8 @@ def make_as_if_committed():
     test_build_name = "{}:unittesting".format(uuid())
 
     with cd(build_path):
-        on_build_host("docker build -t {} .".format(test_build_name))
+        on_build_host("docker build {}-t {} .".format(
+                build_flag, test_build_name))
 
     return test_build_name
 
@@ -84,4 +89,5 @@ def success():
 
 def push():
     branch = local('git rev-parse --abbrev-ref HEAD', capture=True)
-    local("git push -u hub {}".format(branch))
+    origin = get_config().get("dev_origin", "origin")
+    local("git push -u {} {}".format(origin, branch))

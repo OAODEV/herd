@@ -1,12 +1,16 @@
 FROM ubuntu
 MAINTAINER jesse.miller@adops.com
 
-RUN sudo apt-get update -y
+RUN apt-get update && apt-get install -y \
+    git \
+    libpq-dev \
+    python \
+    python-dev \
+    python-pip
 
-RUN apt-get install -y git python python-pip python-dev
 RUN pip install mock
 
-# put mock .herdconfig in place
+# put mock .herdconfig in place for testing
 RUN echo "[Build]\nhost=mock\nbase_path=mock\n" > ~/.herdconfig
 
 ADD . /herd
