@@ -55,7 +55,6 @@ def wipe_config(host, stage_name):
             )
 
 
-@require_docker_registry
 def get_manifest(release, host):
     """ return the port that the release will expose it's service on
 
@@ -74,7 +73,6 @@ def get_manifest(release, host):
         return manifest
 
 
-@require_docker_registry
 def execute_release(release, host, port, stage_name):
     """ run the build on the host with the config
 
