@@ -5,7 +5,7 @@ from uuid import uuid4 as uuid
 
 from fabric.api import *
 
-from config import CONFIG
+from config import CONFIG, get_config
 
 def manifest(section, option):
     config = ConfigParser(allow_no_value=True)
