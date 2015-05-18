@@ -89,4 +89,5 @@ def success():
 
 def push():
     branch = local('git rev-parse --abbrev-ref HEAD', capture=True)
-    local("git push -u hub {}".format(branch))
+    origin = get_config().get("dev_origin", "origin")
+    local("git push -u {} {}".format(origin, branch))
