@@ -9,7 +9,7 @@ setup(
     packages=['app'],
     install_requires=[
         'fabric',
-        'http://github.com/OAODEV/python-gnupg/tarball/master#egg=gnupg-0.3.2',
+        'http://github.com/OAODEV/python-gnupg#egg=gnupg',
         'psycopg2',
         'sqlalchemy',
         ],
