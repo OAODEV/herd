@@ -7,9 +7,12 @@ setup(
     name='herd',
     version=v,
     packages=['app'],
+    dependency_links=[
+        "https://github.com/OAODEV/python-gnupg.git#egg=gnupg",
+    ],
     install_requires=[
         'fabric',
-        'http://github.com/OAODEV/python-gnupg#egg=gnupg',
+        'gnupg',
         'psycopg2',
         'sqlalchemy',
         ],
