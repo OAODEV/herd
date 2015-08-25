@@ -12,7 +12,7 @@ setup(
         'git@github.com:OAODEV/python-gnupg.git',
         'psycopg2',
         'sqlalchemy',
-        ]
+        ],
     description='Herd Enables Rapid Deployment. A devops management tool.',
     author='Jesse B Miller',
     author_email='Jesse.Miller@adops.com',
