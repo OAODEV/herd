@@ -4,7 +4,7 @@ Herd Enables Rapid Deployment. A devops management tool.
 
 ## install
 
-   pip install git+https://github.com/OAODEV/herd.git
+    pip install git+https://github.com/OAODEV/herd.git
 
 ## Commands
 
