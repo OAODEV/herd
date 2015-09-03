@@ -18,10 +18,11 @@ follows these steps
 * Check that build is not broken
 * Check that tests still pass
 * Push changes to github
-* CircleCI builds the commit
+* CircleCI builds the commit and pushes the build to our registry
 * If CCI needs to be set up...
  * Watch the project in CCI
  * Create `registry_password` environment variable for the project
+* Note the build name in the CCI interface for use in the k8s resources
 * Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. (This is the configuration step)
  * This may include the following...
@@ -33,6 +34,7 @@ follows these steps
   * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
 * Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
+* k8s pulls the builds from our registry and runs them
 
 # The herd process
 
