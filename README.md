@@ -15,23 +15,23 @@ follows these steps
 
 * Write tests and code that passes them
 * Fetch and merge collaborators' tests and code
-* check that build is not broken
-* check that tests still pass
-* push changes to github
+* Check that build is not broken
+* Check that tests still pass
+* Push changes to github
 * CircleCI builds the commit
-* if CCI needs to be set up...
- * watch the project in CCI
- * create `registry_password` environment variable for the project
-* write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
+* If CCI needs to be set up...
+ * Watch the project in CCI
+ * Create `registry_password` environment variable for the project
+* Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. (This is the configuration step)
- * this may include the following...
+ * This may include the following...
    ([examples](https://github.com/OAODEV/k8s-resources))
   * [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)
   * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
   * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
   * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html)
   * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
-* create the resources in the qa-sandbox cluster
+* Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
 
 # The herd process
