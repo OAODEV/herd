@@ -8,7 +8,7 @@ setup(
     version=v,
     packages=['app'],
     dependency_links=[
-        "https://github.com/OAODEV/python-gnupg.git#egg=gnupg",
+        "https://github.com/OAODEV/python-gnupg/tarball/master#egg=gnupg",
     ],
     install_requires=[
         'fabric',
