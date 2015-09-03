@@ -13,26 +13,26 @@ Herd Enables Rapid Deployment. A devops management tool.
 The full path from writing code to an accessable service running in k8s
 follows these steps
 
-1. Write tests and code that passes them
-2. Fetch and merge collaborators' tests and code
-3. check that build is not broken
-4. check that tests still pass
-5. push changes to github
-6. CircleCI builds the commit
- a. if CCI needs to be set up...
-  i. watch the project in CCI
-  ii. create `registry_password` environment variable for the project
-7. create [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
-   resources for the build. (This is the configuration step)
- a. this may include the following...
-    ([examples](https://github.com/OAODEV/k8s-resources))
-  i. [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)
-  ii. [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
-  iii. [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
-  iv. [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html)
-  v. [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
-8. create the resources in the qa-sandbox cluster
-   (using gcloud and kubectl command line tools)
+* Write tests and code that passes them
+* Fetch and merge collaborators' tests and code
+* check that build is not broken
+* check that tests still pass
+* push changes to github
+* CircleCI builds the commit
+* if CCI needs to be set up...
+ * watch the project in CCI
+ * create `registry_password` environment variable for the project
+* write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
+  resources for the build. (This is the configuration step)
+ * this may include the following...
+  *  ([examples](https://github.com/OAODEV/k8s-resources))
+  * [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)
+  * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
+  * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
+  * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html)
+  * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
+* create the resources in the qa-sandbox cluster
+  (using gcloud and kubectl command line tools)
 
 # The herd process
 
