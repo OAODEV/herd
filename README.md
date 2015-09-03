@@ -25,7 +25,7 @@ follows these steps
 * write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. (This is the configuration step)
  * this may include the following...
-  *  ([examples](https://github.com/OAODEV/k8s-resources))
+   ([examples](https://github.com/OAODEV/k8s-resources))
   * [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)
   * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
   * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
