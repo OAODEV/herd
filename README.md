@@ -13,28 +13,36 @@ Herd Enables Rapid Deployment. A devops management tool.
 The full path from writing code to an accessable service running in k8s
 follows these steps
 
+* Create work branch
 * Write tests and code that passes them
 * Fetch and merge collaborators' tests and code
-* Check that build is not broken
+* Check that build is not broken?
 * Check that tests still pass
 * Push changes to github
 * CircleCI builds the commit and pushes the build to our registry
 * If CCI needs to be set up...
- * Watch the project in CCI
+ * Watch the project in CCI [here](https://circleci.com/add-projects)
  * Create `registry_password` environment variable for the project
+ *  *** link to slack archive on registry password ***
 * Note the build name in the CCI interface for use in the k8s resources
+*   *** describe how to infer the build name without going to circle ci ***
 * Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. (This is the configuration step)
  * This may include the following...
    ([examples](https://github.com/OAODEV/k8s-resources))
-  * [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)
+  * [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)(example)[https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml]
   * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
   * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
   * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html)
   * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
 * Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
+    *** how do you install gcloud and kubectl? ***
+    https://cloud.google.com/container-engine/docs/before-you-begin?hl=en
+    *** link to kubectl docs ***
 * k8s pulls the builds from our registry and runs them
+
+A [good walkthrough](https://cloud.google.com/container-engine/docs/tutorials/guestbook) of k8s concepts.
 
 # The herd process
 
