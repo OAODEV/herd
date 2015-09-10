@@ -33,7 +33,7 @@ follows these steps
   * [Pods](http://kubernetes.io/v1.0/docs/user-guide/pods.html)(example)[https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml]
   * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
   * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
-  * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html)
+  * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) (and [Here's a script](https://gist.github.com/tym-oao/25f4b3a05532fa6def8e) for generating `secret.yaml` from a name=value environment file.)
   * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
 * Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
