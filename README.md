@@ -19,13 +19,14 @@ follows these steps
 * Check that build is not broken?
 * Check that tests still pass
 * Push changes to github
-* CircleCI builds the commit and pushes the build to our registry
+* CircleCI (CCI) builds the commit and pushes the build to our registry
 * If CCI needs to be set up...
  * Watch the project in CCI [here](https://circleci.com/add-projects)
  * Create `registry_password` environment variable for the project
- *  *** link to slack archive on registry password ***
+  * More info [here](https://oao.slack.com/files/jmiller/F064MMSS3/Value_for_CCI_envar_registry_password.txt) check
+  * This `registry_password` should be set as an environmental variable for each individual project/repo via the CircleCI UI. Click on the gear icon for a repo, then "Environmental Variables" under the ​*Tweaks*​ heading in the left-hand sidebar. 
 * Note the build name in the CCI interface for use in the k8s resources
-*   *** describe how to infer the build name without going to circle ci ***
+ * you can infer the build name from info in the git repo if you don't want to go to get it from CCI. It'll be in this form here --> `r.iadops.com/<service name>:<version>_build.<git short hash>`. Get the service name from `circle.yml`. get the version from the `Version` file (or leave it blank if that file is not there). Get the short hash with `git rev-parse --short HEAD` for the commit being built.
 * Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. (This is the configuration step)
  * This may include the following...
@@ -37,9 +38,8 @@ follows these steps
   * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
 * Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
-    *** how do you install gcloud and kubectl? ***
-    https://cloud.google.com/container-engine/docs/before-you-begin?hl=en
-    *** link to kubectl docs ***
+    [command line tool instructions](https://cloud.google.com/container-engine/docs/before-you-begin?hl=en)
+    [kubectl docs](https://cloud.google.com/container-engine/docs/kubectl/)
 * k8s pulls the builds from our registry and runs them
 
 A [good walkthrough](https://cloud.google.com/container-engine/docs/tutorials/guestbook) of k8s concepts.
