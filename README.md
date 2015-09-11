@@ -31,11 +31,11 @@ follows these steps
   resources for the build. (This is the configuration step)
  * This may include the following...
    ([examples](https://github.com/OAODEV/k8s-resources))
-  * [Pods] (http://kubernetes.io/v1.0/docs/user-guide/pods.html)[example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml)
-  * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html)
-  * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html)
+  * [Pods] (http://kubernetes.io/v1.0/docs/user-guide/pods.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml))
+  * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/api/identity-rc.yaml))
+  * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/api/identity-service.yaml))
   * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) (and [Here's a script](https://gist.github.com/tym-oao/25f4b3a05532fa6def8e) for generating `secret.yaml` from a name=value environment file.)
-  * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html)
+  * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html) (this [Pod example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/postgres.yaml) uses Volumes)
 * Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
     [command line tool instructions](https://cloud.google.com/container-engine/docs/before-you-begin?hl=en)
