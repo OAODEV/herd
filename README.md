@@ -28,19 +28,22 @@ follows these steps
 * Note the build name in the CCI interface for use in the k8s resources
  * you can infer the build name from info in the git repo if you don't want to go to get it from CCI. It'll be in this form here --> `r.iadops.com/<service name>:<version>_build.<git short hash>`. Get the service name from `circle.yml`. get the version from the `Version` file (or leave it blank if that file is not there). Get the short hash with `git rev-parse --short HEAD` for the commit being built.
 * Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
-  resources for the build. (This is the configuration step)
- * This may include the following...
-   ([examples](https://github.com/OAODEV/k8s-resources))
-  * [Pods] (http://kubernetes.io/v1.0/docs/user-guide/pods.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml))
-  * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/api/identity-rc.yaml))
-  * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/api/identity-service.yaml))
-  * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) (and [Here's a script](https://gist.github.com/tym-oao/25f4b3a05532fa6def8e) for generating `secret.yaml` from a name=value environment file.)
-  * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html) (this [Pod example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/postgres.yaml) uses Volumes)
+  resources for the build. This is the configuration step. This may include the following...
+ * [Pods] (http://kubernetes.io/v1.0/docs/user-guide/pods.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml))
+   * In general, users shouldn't need to create pods directly. They should almost always use controllers - unless you need to mount a read-write volume 
+ * [Replication Controllers](http://kubernetes.io/v1.0/docs/user-guide/replication-controller.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/api/identity-rc.yaml))
+ * [Services](http://kubernetes.io/v1.0/docs/user-guide/services.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/api/identity-service.yaml))
+ * [Secrets](http://kubernetes.io/v1.0/docs/user-guide/secrets.html) (and [Here's a script](https://gist.github.com/tym-oao/25f4b3a05532fa6def8e) for generating `secret.yaml` from a name=value environment file.)
+ * [Persistant Disks and Volumes](http://kubernetes.io/v1.0/docs/user-guide/volumes.html) (this [Pod example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/postgres.yaml) uses Volumes)
+ * [Repo with more examples](https://github.com/OAODEV/k8s-resources)
 * Create the resources in the qa-sandbox cluster
   (using gcloud and kubectl command line tools)
-    [command line tool instructions](https://cloud.google.com/container-engine/docs/before-you-begin?hl=en)
-    [kubectl docs](https://cloud.google.com/container-engine/docs/kubectl/)
+ * [command line tool installation instructions](https://cloud.google.com/container-engine/docs/before-you-begin?hl=en)
+ * [kubectl docs](https://cloud.google.com/container-engine/docs/kubectl/)
+   * example: too add the replication controller: `kubectl create -f path/to/foo-replication-controller.yml` and to add the service: `kubectl create -f path/to/foo-service.yml`
 * k8s pulls the builds from our registry and runs them
+* To view information about the service you just set up, including the external IP:
+   * `kubectl describe services foo`
 
 A [good walkthrough](https://cloud.google.com/container-engine/docs/tutorials/guestbook) of k8s concepts.
 
