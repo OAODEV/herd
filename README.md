@@ -40,7 +40,7 @@ follows these steps
   (using gcloud and kubectl command line tools)
  * [command line tool installation instructions](https://cloud.google.com/container-engine/docs/before-you-begin?hl=en)
  * [kubectl docs](https://cloud.google.com/container-engine/docs/kubectl/)
-   * example: too add the replication controller: `kubectl create -f path/to/foo-replication-controller.yml` and to add the service: `kubectl create -f path/to/foo-service.yml`
+   * example: to add the replication controller: `kubectl create -f path/to/foo-replication-controller.yml` and to add the service: `kubectl create -f path/to/foo-service.yml`
 * k8s pulls the builds from our registry and runs them
 * To view information about the service you just set up, including the external IP:
    * `kubectl describe services foo`
