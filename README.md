@@ -46,8 +46,7 @@ follows these steps
    * `kubectl describe services foo`
 
 A [good walkthrough](https://cloud.google.com/container-engine/docs/tutorials/guestbook) of k8s concepts.
-You may need to run this command in order to get your `kubectl` command configured.
-    gcloud container clusters get-credentials <cluster name>
+You may need to run this command in order to get your `kubectl` command configured. `gcloud container clusters get-credentials <cluster name>`
 
 # The herd process
 
