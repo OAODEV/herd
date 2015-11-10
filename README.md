@@ -50,25 +50,7 @@ You may need to run this command in order to get your `kubectl` command configur
 
 ##### To simplify deployment of containers on GCE you can push the image to `gcr.io`
 
-These instructions are for adding `gcr.io` to a project already pushing to `r.iadops.com`. For now we are going to push to both registries but taking out `r.iadops.com` should be straight forward when we get there. 
-
-First grab your gcloud access token
-
-    $ gcloud auth print-access-token
-    
-Then [set an environment variable in Circle CI without adding it to git](https://circleci.com/docs/environment-variables#setting-environment-variables-for-all-commands-without-adding-them-to-git). Name it `gcloud_access_token` and set it to the access token from the previous step.
-
-Add this line to the `dependencies -> override` section of circle.yml to get circle to log into `gcr.io`
-
-    - docker login -e 1234@5678.com -u _token -p $gcloud_access_token https://gcr.io
-    
-Add this line to `dependencies -> override` section right after the `docker build` line to tag the image for `gcr.io`
-
-    - docker tag r.iadops.com/$herd_service_name:$herd_build_tag gcr.io/lexical-cider-93918/$herd_service_name:$herd_build_tag
-    
-Add this line to `deployment -> index -> commands` to push the built and tested image to `gcr.io`
-
-    - docker push gcr.io/lexical-cider-93918/$herd_service_name:$herd_build_tag
+I'm following these [instructions](http://scottsmerchek.com/2015/07/24/pushing-to-google-container-registry-from-circleci/)
 
 # The herd process
 
