@@ -50,7 +50,46 @@ You may need to run this command in order to get your `kubectl` command configur
 
 ##### To simplify deployment of containers on GCE you can push the image to `gcr.io`
 
-I'm following these [instructions](http://scottsmerchek.com/2015/07/24/pushing-to-google-container-registry-from-circleci/)
+Add some (below) environmental variables for each individual project/repo via the CircleCI UI. Click on the gear icon for a repo, then "Environmental Variables" under the ​*Tweaks*​ heading in the left-hand sidebar.
+
+First generate a new JSON key in the [developer console](https://console.developers.google.com/project/lexical-cider-93918/apiui/credential/serviceaccount/account-2@lexical-cider-93918.iam.gserviceaccount.com).
+
+Base64 encode the JSON file
+
+    cat <keyfile.json> | base64
+    
+Set `gcloud_key` the resulting block of base64 encoded text.
+
+Set `gcloud_email` to `account-2@lexical-cider-93918.iam.gserviceaccount.com`
+
+Make some changes to your `circle.yaml` file.
+
+First add some environment variables to set up the gcloud tool. Under `machine -> environment` add the following.
+
+    CLOUDSDK_CORE_DISABLE_PROMPTS: 1
+    CLOUDSDK_PYTHON_SITEPACKAGES: 1
+    CLOUDSDK_COMPUTE_ZONE: us-central1-b
+    PATH: $PATH:/home/ubuntu/google-cloud-sdk/bin
+    
+Then create a cache directory for the gcloud tool so each build doesn't have to install it. Under `dependencies -> cache_directories` add the following line.
+
+    - ~/google-cloud-sdk
+    
+Now we can install `gcloud`. Under `dependencies -> override` add the following.
+
+    - if [ ! -d ~/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash; fi
+    - ~/google-cloud-sdk/bin/gcloud components update preview
+    
+In order to push to gcr.io while we are still pushing to r.iadops.com, we need to tag our build for gcr.io. After the `docker build` line in `dependencies -> override` add the following line.
+
+    - docker tag -f r.iadops.com/$herd_service_name:$herd_build_tag us.gcr.io/lexical-cider-93918/$herd_service_name:$herd_build_tag
+
+To push to gcr.io after testing we have to activate the service account and then use `gcloud` to push the image. Under `deployment -> index -> commands` add the following.
+
+    - echo $gcloud_key | base64 --decode > gcloud.json; gcloud auth activate-service-account $gcloud_email --key-file gcloud.json; ssh-keygen -f ~/.ssh/google_compute_engine -N ""
+    - gcloud docker push us.gcr.io/lexical-cider-93918/$herd_service_name:$herd_build_tag
+
+Based on these [instructions](http://scottsmerchek.com/2015/07/24/pushing-to-google-container-registry-from-circleci/)
 
 # The herd process
 
