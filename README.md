@@ -50,18 +50,18 @@ You may need to run this command in order to get your `kubectl` command configur
 
 ##### To simplify deployment of containers on GCE you can push the image to `gcr.io`
 
-Add some (below) environmental variables for each individual project/repo via the CircleCI UI. Click on the gear icon for a repo, then "Environmental Variables" under the ​*Tweaks*​ heading in the left-hand sidebar.
-
 First generate a new JSON key in the [Developer Console](https://console.developers.google.com/):
 * Select API Manager from the Gallery (:hamburger: to the left of "Google Developers Console")
 * Select Credentials
-* Select (or create) your service account.
+* Select the service account account-2@lexical-cider-93918.iam.gserviceaccount.com
 * Click "Generate new JSON key"
 
 Base64 encode the JSON file
 
     cat <keyfile.json> | base64
     
+Add some (below) environmental variables for each individual project/repo via the CircleCI UI. Click on the gear icon for a repo, then "Environmental Variables" under the ​*Tweaks*​ heading in the left-hand sidebar.
+
 Set `gcloud_key` the resulting block of base64 encoded text.
 
 Set `gcloud_email` to `account-2@lexical-cider-93918.iam.gserviceaccount.com`
