@@ -6,6 +6,28 @@ Herd Enables Rapid Deployment. A devops management tool.
 
     pip install git+https://github.com/OAODEV/herd.git
 
+#
+Using herd requires that a config file be placed at `~/.herdconfig` ... the format of the file is as follows.
+
+```
+[Build]
+host=[DOCKER REGISTRY]
+base_path=[PATH FOR BUILDS ON SERVER]
+​
+[Security]
+gnupg_home=[LOCAL PATH GNUPG]
+remote_secret_store=[GPG KEY HOST]
+my_fingerprint=[REDACTED]
+deploy_fingerprints=[REDACTED], [REDACTED]
+​
+[Release]
+# store_db=sqlite:////tmp/test.db
+store_db=postgresql://[USER]:[PASSWORD]@[DB HOST]:[DB PORT]/[DB NAME]
+​
+[Deploy]
+config_stage_path=/mnt/ramdisk
+```
+
 # The manual k8s process
 
 ## Taking a service from git to k8s
@@ -48,6 +70,8 @@ You may need to run this command in order to get your `kubectl` command configur
 Herd abstracts the manual process to the level of abstraction where we want to
 be making human decisions. For example we don't want running the unit tests to
 be a human decision, we want code integration to be a human decision.
+
+The commands below are in order of an example workflow.
 
 ## Commands
 
