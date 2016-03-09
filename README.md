@@ -20,13 +20,7 @@ follows these steps
 * Check that tests still pass
 * Push changes to github
 * CircleCI (CCI) builds the commit and pushes the build to our registry
-* If CCI needs to be set up...
- * Watch the project in CCI [here](https://circleci.com/add-projects)
- * Create `registry_password` environment variable for the project
-  * More info [here](https://oao.slack.com/files/jmiller/F064MMSS3/Value_for_CCI_envar_registry_password.txt) check
-  * This `registry_password` should be set as an environmental variable for each individual project/repo via the CircleCI UI. Click on the gear icon for a repo, then "Environmental Variables" under the ​*Tweaks*​ heading in the left-hand sidebar. 
-* Note the build name in the CCI interface for use in the k8s resources
- * you can infer the build name from info in the git repo if you don't want to go to get it from CCI. It'll be in this form here --> `r.iadops.com/<service name>:<version>_build.<git short hash>`. Get the service name from `circle.yml`. get the version from the `Version` file (or leave it blank if that file is not there). Get the short hash with `git rev-parse --short HEAD` for the commit being built.
+ * For a full description of how to set up CCI to work with herd, (review this wiki entry)[https://github.com/OAODEV/herd/wiki/Setup-Circle-CI-for-use-with-herd].
 * Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. This is the configuration step. This may include the following...
  * [Pods] (http://kubernetes.io/v1.0/docs/user-guide/pods.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml))
@@ -48,52 +42,6 @@ follows these steps
 A [good walkthrough](https://cloud.google.com/container-engine/docs/tutorials/guestbook) of k8s concepts.
 You may need to run this command in order to get your `kubectl` command configured. `gcloud container clusters get-credentials <cluster name>`
 
-##### To simplify deployment of containers on GCE you can push the image to `gcr.io`
-
-First generate a new JSON key in the [Developer Console](https://console.developers.google.com/):
-* Select API Manager from the Gallery (:hamburger: to the left of "Google Developers Console")
-* Select Credentials
-* Select the service account account-2@lexical-cider-93918.iam.gserviceaccount.com
-* Click "Generate new JSON key"
-
-Base64 encode the JSON file
-
-    cat <keyfile.json> | base64
-    
-Add some (below) environmental variables for each individual project/repo via the CircleCI UI. Click on the gear icon for a repo, then "Environmental Variables" under the ​*Tweaks*​ heading in the left-hand sidebar.
-
-Set `gcloud_key` the resulting block of base64 encoded text.
-
-Set `gcloud_email` to `account-2@lexical-cider-93918.iam.gserviceaccount.com`
-
-Make some changes to your `circle.yaml` file.
-
-First add some environment variables to set up the gcloud tool. Under `machine -> environment` add the following.
-
-    CLOUDSDK_CORE_DISABLE_PROMPTS: 1
-    CLOUDSDK_PYTHON_SITEPACKAGES: 1
-    CLOUDSDK_COMPUTE_ZONE: us-central1-b
-    PATH: $PATH:/home/ubuntu/google-cloud-sdk/bin
-    
-Then create a cache directory for the gcloud tool so each build doesn't have to install it. Under `dependencies -> cache_directories` add the following line.
-
-    - ~/google-cloud-sdk
-    
-Now we can install `gcloud`. Under `dependencies -> override` add the following.
-
-    - if [ ! -d ~/google-cloud-sdk ]; then curl https://sdk.cloud.google.com | bash; fi
-    - ~/google-cloud-sdk/bin/gcloud components update preview
-    
-In order to push to gcr.io while we are still pushing to r.iadops.com, we need to tag our build for gcr.io. After the `docker build` line in `dependencies -> override` add the following line.
-
-    - docker tag -f r.iadops.com/$herd_service_name:$herd_build_tag us.gcr.io/lexical-cider-93918/$herd_service_name:$herd_build_tag
-
-To push to gcr.io after testing we have to activate the service account and then use `gcloud` to push the image. Under `deployment -> index -> commands` add the following.
-
-    - echo $gcloud_key | base64 --decode > gcloud.json; gcloud auth activate-service-account $gcloud_email --key-file gcloud.json; ssh-keygen -f ~/.ssh/google_compute_engine -N ""
-    - gcloud docker push us.gcr.io/lexical-cider-93918/$herd_service_name:$herd_build_tag
-
-Based on these [instructions](http://scottsmerchek.com/2015/07/24/pushing-to-google-container-registry-from-circleci/)
 
 # The herd process
 
