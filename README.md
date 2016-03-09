@@ -102,10 +102,16 @@ the unittest portion of the automated build process”. This is run by integrate
 ### integrate
 
 Executes the CI pipeline for the most recent commit of the local repo (pull,
-make, unit test, push commit and build). After unit testing and repo integration
-the CI server (Circle CI?) will build and test the commit.
+make, unit test, push commit and build). After unit testing and Circle CI
+will build and test the commit.
 
     herd integrate
+
+Examine the output of this command before moving forward. If there are no errors,
+locate the build in CircleCI. Under "DEPENDENCIES", locate the cell that says 
+`$ echo "The build name is in here!!!" r.iadops.com/$herd_service_name:$herd_build_tag`
+Open that cell and the `<build name>` will be located within it with the variables
+replaced with the actual values of your herd service name and build tag.
 
 ### configure
 
@@ -117,8 +123,8 @@ release store (more info in `app/tests/test.conf`).
 The config format has changed, it's now docker's config format which is one
 `key=value` pair per line with no headers.
 
-Configure will print out the info for the newly created release. The id is used
-for deployment
+Configure will print out the info for the newly created release. The id is what
+should be used as `<release id>` in the **deploy** command below.
 
 ### releases
 
