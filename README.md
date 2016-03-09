@@ -102,7 +102,7 @@ the unittest portion of the automated build process”. This is run by integrate
 ### integrate
 
 Executes the CI pipeline for the most recent commit of the local repo (pull,
-make, unit test, push commit and build). After unit testing and Circle CI
+make, unit test, push commit and build). After unit testing Circle CI
 will build and test the commit.
 
     herd integrate
