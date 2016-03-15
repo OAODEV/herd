@@ -42,7 +42,7 @@ follows these steps
 * Check that tests still pass
 * Push changes to github
 * CircleCI (CCI) builds the commit and pushes the build to our registry
- * For a full description of how to set up CCI to work with herd, (review this wiki entry)[https://github.com/OAODEV/herd/wiki/Setup-Circle-CI-for-use-with-herd].
+ * For a full description of how to set up CCI to work with herd, [review this wiki entry](https://github.com/OAODEV/herd/wiki/Setup-Circle-CI-for-use-with-herd).
 * Write [k8s](http://kubernetes.io/v1.0/docs/user-guide/overview.html)
   resources for the build. This is the configuration step. This may include the following...
  * [Pods] (http://kubernetes.io/v1.0/docs/user-guide/pods.html) ([example](https://github.com/OAODEV/k8s-resources/blob/master/warehouse/warehouse-etl.yaml))
